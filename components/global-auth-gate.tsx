@@ -109,28 +109,6 @@ export default function GlobalAuthGate({ children }: { children: React.ReactNode
       window.location.assign(`${rootUrl}?${qs.toString()}`);
     };
 
-    const handleGoogleAuthAccount = (email: string, name: string) => {
-      setIsSubmitting(true);
-      setErrorMsg("");
-      const cleanEmail = email.toLowerCase().trim();
-      const isAdminAccount = cleanEmail === "haibackery@gmail.com";
-
-      loginWithGoogle(cleanEmail, name);
-      setSuccessMsg(
-        isAdminAccount
-          ? "Admin Verified: Shekhar Rao (haibackery@gmail.com)"
-          : `Signed in as Customer: ${cleanEmail}`
-      );
-
-      setTimeout(() => {
-        if (isAdminAccount) {
-          router.push("/admin/executive");
-        } else {
-          router.push("/");
-        }
-      }, 500);
-    };
-
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#220d05] via-[#3d1809] to-[#1a0903] flex items-center justify-center px-4 py-12 relative overflow-hidden">
         
@@ -167,12 +145,12 @@ export default function GlobalAuthGate({ children }: { children: React.ReactNode
           )}
 
           {/* Authentication Actions */}
-          <div className="space-y-3 pt-2">
+          <div className="pt-2">
             <button
               type="button"
               onClick={handleLaunchGoogleOAuth}
               disabled={isSubmitting}
-              className="w-full py-3.5 px-6 bg-white border-2 border-amber-400 hover:border-amber-500 rounded-2xl text-sm font-black text-gray-800 hover:bg-amber-50/50 flex items-center justify-center gap-3 shadow-md hover:shadow-lg transition transform hover:scale-[1.01] active:scale-95 disabled:opacity-50"
+              className="w-full py-4 px-6 bg-white border-2 border-amber-400 hover:border-amber-500 rounded-2xl text-sm font-black text-gray-800 hover:bg-amber-50/50 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition transform hover:scale-[1.01] active:scale-95 disabled:opacity-50"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
@@ -193,17 +171,6 @@ export default function GlobalAuthGate({ children }: { children: React.ReactNode
                 />
               </svg>
               <span>{isSubmitting ? "Connecting to Google..." : "Sign in with Google"}</span>
-            </button>
-
-            {/* Customer Storefront Access */}
-            <button
-              type="button"
-              onClick={() => handleGoogleAuthAccount("customer@highbakery.in", "Valued Customer")}
-              disabled={isSubmitting}
-              className="w-full py-3 px-4 bg-amber-50 hover:bg-amber-100 text-chocolate-900 border border-amber-300 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition"
-            >
-              <ShoppingBag className="w-4 h-4 text-bakery-600" />
-              <span>Browse High Bakery as Customer</span>
             </button>
           </div>
 
