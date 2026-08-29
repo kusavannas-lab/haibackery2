@@ -1,0 +1,744 @@
+"use client";
+
+import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
+import { 
+  Camera, 
+  Upload, 
+  Sparkles, 
+  Send, 
+  Calendar, 
+  Clock, 
+  Cake, 
+  CheckCircle2, 
+  User, 
+  Phone, 
+  FileText, 
+  ArrowLeft,
+  Heart,
+  Check,
+  MessageCircle
+} from "lucide-react";
+import confetti from "canvas-confetti";
+import PhotoCakePreview from "@/components/photo-cake-preview";
+import { useBakeryStore } from "@/lib/store/bakery-store";
+import { formatCurrency } from "@/lib/utils";
+import { generatePhotoCakeWhatsAppUrl, ADMIN_PHONE, STORE_NAME } from "@/lib/whatsapp";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase/client";
+import { PhotoCakeRequest } from "@/lib/types";
+
+const FLAVORS = [
+  { name: "Belgian Chocolate Truffle", pricePerKg: 750, color: "chocolate" },
+  { name: "Classic Black Forest Cherry", pricePerKg: 650, color: "blackforest" },
+  { name: "Red Velvet Cream Cheese", pricePerKg: 800, color: "redvelvet" },
+  { name: "Butterscotch Caramel Crunch", pricePerKg: 680, color: "butterscotch" },
+  { name: "Fresh Pineapple Delight", pricePerKg: 620, color: "vanilla" },
+  { name: "Alphonso Mango Cream", pricePerKg: 700, color: "mango" },
+];
+
+const WEIGHTS = [
+  { label: "1.0 kg (Standard)", value: "1.0 kg", multiplier: 1.0 },
+  { label: "1.5 kg (Celebration)", value: "1.5 kg", multiplier: 1.5 },
+  { label: "2.0 kg (Party Size)", value: "2.0 kg", multiplier: 2.0 },
+  { label: "3.0 kg (Grand Event)", value: "3.0 kg", multiplier: 3.0 },
+  { label: "0.5 kg (Mini Bento)", value: "0.5 kg", multiplier: 0.6 },
+];
+
+const TIME_SLOTS = [
+  "10:00 AM - 12:00 PM",
+  "12:00 PM - 02:00 PM",
+  "02:00 PM - 04:00 PM",
+  "04:00 PM - 06:00 PM",
+  "06:00 PM - 08:00 PM",
+  "08:00 PM - 10:00 PM",
+];
+
+export default function PhotoCakePage() {
+  const { photoCakeConfig, submitPhotoCakeRequest, user } = useBakeryStore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const availableFlavors = photoCakeConfig?.flavors?.filter((f) => f.is_available) || FLAVORS;
+  const availableWeights = photoCakeConfig?.weights?.filter((w) => w.is_available !== false) || WEIGHTS;
+  const availableShapes =
+    photoCakeConfig?.shapes && photoCakeConfig.shapes.length > 0
+      ? photoCakeConfig.shapes.filter((s) => s.is_available !== false)
+      : [
+          { id: "sh-1", name: "Round", label: "Classic Round ⭕", extraPrice: 0 },
+          { id: "sh-2", name: "Square", label: "Modern Square ⏹️", extraPrice: 0 },
+          { id: "sh-3", name: "Heart", label: "Romantic Heart ❤️", extraPrice: 50 },
+        ];
+  const [isPhotoCakeEnabled, setIsPhotoCakeEnabled] = useState(true);
+
+  useEffect(() => {
+    const syncEnabled = () => {
+      if (typeof window === "undefined") return;
+      const direct = localStorage.getItem("hb_photo_cake_enabled_v2");
+      if (direct !== null) {
+        setIsPhotoCakeEnabled(direct === "true");
+        return;
+      }
+      const config = localStorage.getItem("hb_photo_cake_config_v2");
+      if (config) {
+        try {
+          const parsed = JSON.parse(config);
+          if (parsed.is_enabled !== undefined) {
+            setIsPhotoCakeEnabled(parsed.is_enabled !== false);
+            return;
+          }
+        } catch {}
+      }
+      setIsPhotoCakeEnabled(photoCakeConfig?.is_enabled !== false);
+    };
+
+    syncEnabled();
+    window.addEventListener("hb_store_updated", syncEnabled);
+    window.addEventListener("storage", syncEnabled);
+    return () => {
+      window.removeEventListener("hb_store_updated", syncEnabled);
+      window.removeEventListener("storage", syncEnabled);
+    };
+  }, [photoCakeConfig]);
+
+  const activeTimeSlots = photoCakeConfig?.timeSlots || TIME_SLOTS;
+  const printCharge = photoCakeConfig?.printCharge ?? 150;
+
+  // Form State
+  const [selectedFlavor, setSelectedFlavor] = useState(() => availableFlavors[0]?.name || "Belgian Chocolate Truffle");
+  const [selectedWeight, setSelectedWeight] = useState(() => availableWeights[0]?.value || "1.0 kg");
+  const [selectedShape, setSelectedShape] = useState(() => availableShapes[0]?.name || "Round");
+  const [isEggless, setIsEggless] = useState(true);
+  const [cakeMessage, setCakeMessage] = useState("Happy Birthday!");
+  const [photoUrl, setPhotoUrl] = useState("https://images.unsplash.com/photo-1535141192574-5d4897c13136?auto=format&fit=crop&w=800&q=80");
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Customer Contact State
+  const [customerName, setCustomerName] = useState(user.isLoggedIn ? user.name : "");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [deliveryDate, setDeliveryDate] = useState(() => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split("T")[0];
+  });
+  const [deliveryTime, setDeliveryTime] = useState(() => activeTimeSlots[3] || activeTimeSlots[0] || "04:00 PM - 06:00 PM");
+  const [specialNotes, setSpecialNotes] = useState("");
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittedRequest, setSubmittedRequest] = useState<PhotoCakeRequest | null>(null);
+
+  // Calculate Dynamic Price
+  const currentFlavorObj = availableFlavors.find((f) => f.name === selectedFlavor) || availableFlavors[0] || { pricePerKg: 700 };
+  const currentWeightObj = availableWeights.find((w) => w.value === selectedWeight) || availableWeights[0] || { multiplier: 1.0 };
+  const currentShapeObj = availableShapes.find((s) => s.name === selectedShape) || availableShapes[0] || { extraPrice: 0 };
+  const calculatedPrice = Math.round(
+    currentFlavorObj.pricePerKg * currentWeightObj.multiplier + printCharge + (currentShapeObj.extraPrice || 0)
+  );
+
+  // Handle Image Upload (Supabase storage or Local data URL)
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+
+    try {
+      // If Supabase configured, upload to cake-photos bucket
+      if (isSupabaseConfigured() && supabase) {
+        const fileExt = file.name.split(".").pop();
+        const fileName = `cake-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("cake-photos")
+          .upload(filePath, file);
+
+        if (!uploadError) {
+          const { data } = supabase.storage.from("cake-photos").getPublicUrl(filePath);
+          if (data?.publicUrl) {
+            setPhotoUrl(data.publicUrl);
+            setIsUploading(false);
+            return;
+          }
+        }
+      }
+
+      // Fallback: Read as Data URL for instant live preview
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (reader.result) {
+          setPhotoUrl(reader.result as string);
+        }
+        setIsUploading(false);
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      console.error("Image upload failed:", err);
+      setIsUploading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customerName.trim() || !customerPhone.trim()) {
+      alert("Please provide your name and WhatsApp phone number.");
+      return;
+    }
+    if (!deliveryDate) {
+      alert("Please select a delivery date.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const requestRecord = await submitPhotoCakeRequest({
+        customer_name: customerName.trim(),
+        customer_phone: customerPhone.trim(),
+        cake_flavor: selectedFlavor,
+        cake_weight: selectedWeight,
+        cake_shape: selectedShape,
+        eggless: isEggless,
+        image_url: photoUrl,
+        message: cakeMessage.trim(),
+        delivery_date: deliveryDate,
+        delivery_time: deliveryTime,
+        notes: specialNotes.trim(),
+        estimated_price: calculatedPrice,
+        status: "Received",
+      });
+
+      // Fire Confetti
+      try {
+        confetti({
+          particleCount: 100,
+          spread: 80,
+          origin: { y: 0.6 },
+        });
+      } catch {
+        // ignore
+      }
+
+      setSubmittedRequest(requestRecord);
+
+      // Automated WhatsApp Trigger to Admin
+      const whatsappUrl = generatePhotoCakeWhatsAppUrl(requestRecord);
+      window.open(whatsappUrl, "_blank");
+
+    } catch (err) {
+      console.error("Error submitting photo cake request:", err);
+      alert("Failed to submit photo cake request. Please try again or WhatsApp us directly.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8">
+      
+      {/* Top Breadcrumb & Header */}
+      <div className="space-y-3">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-xs font-bold text-bakery-700 hover:text-bakery-900 transition"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Storefront</span>
+        </Link>
+
+        {isPhotoCakeEnabled && (
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-bakery-800 text-xs font-bold mb-2">
+                <Sparkles className="w-3.5 h-3.5 text-bakery-600" />
+                <span>High Bakery Custom Studio</span>
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-serif font-extrabold text-chocolate-900">
+                Personalized Photo Cake Designer 🎂
+              </h1>
+              <p className="text-xs sm:text-sm text-amber-900/70">
+                High-resolution edible photo printing on fresh bakery cakes in Bommika, Hiramandalam.
+              </p>
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-bakery-700">
+                <Cake className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs text-amber-800 font-medium">Estimated Price</p>
+                <p className="text-xl font-extrabold text-chocolate-900">
+                  {formatCurrency(calculatedPrice)}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {!isPhotoCakeEnabled ? (
+        /* Only Show "Now it is not available" View When Disabled by Admin */
+        <div className="bg-gradient-to-r from-rose-500/15 via-amber-500/15 to-rose-500/15 border-2 border-rose-300 rounded-3xl p-8 sm:p-14 text-center space-y-4 shadow-md max-w-3xl mx-auto my-8 animate-in zoom-in-95 duration-300">
+          <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-rose-100 text-rose-950 text-xs font-black border border-rose-300">
+            <span>🔴 Now it is not available</span>
+          </div>
+          <h2 className="font-serif font-black text-3xl sm:text-4xl text-chocolate-900">
+            Photo Cake: Now it is not available
+          </h2>
+          <p className="text-xs sm:text-sm text-chocolate-900 max-w-xl mx-auto leading-relaxed font-medium">
+            Photo cake online ordering is currently disabled by High Bakery. Please contact Shekhar Rao directly on WhatsApp for offline inquiries and future bookings!
+          </p>
+          <div className="pt-3">
+            <a
+              href={`https://wa.me/919347166241?text=${encodeURIComponent("Hello Shekhar Rao, I see photo cakes are now not available online. I would like to inquire about custom photo cake availability.")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 transition transform hover:scale-105"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span>Chat with Shekhar Rao on WhatsApp (+91 9347166241)</span>
+            </a>
+          </div>
+        </div>
+      ) : submittedRequest ? (
+        /* Order Success View */
+        <div className="bg-white rounded-3xl p-8 sm:p-12 border border-amber-200 shadow-xl text-center max-w-2xl mx-auto space-y-6 animate-in zoom-in-95 duration-300">
+          <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto text-emerald-600 shadow-xl shadow-emerald-500/20">
+            <CheckCircle2 className="w-12 h-12" />
+          </div>
+
+          <div className="space-y-2">
+            <h2 className="font-serif font-bold text-2xl text-chocolate-900">
+              Photo Cake Request Received!
+            </h2>
+            <p className="text-xs sm:text-sm text-amber-800/80">
+              Thank you, <strong className="text-chocolate-900">{submittedRequest.customer_name}</strong>! Your customized photo cake request has been submitted to Shekhar Rao at High Bakery.
+            </p>
+          </div>
+
+          <div className="bg-amber-50/80 p-5 rounded-2xl border border-amber-200 text-left space-y-3 text-xs">
+            <div className="flex justify-between border-b border-amber-200 pb-2">
+              <span className="font-semibold text-amber-900">Request ID:</span>
+              <span className="font-bold text-bakery-700">{submittedRequest.id}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-semibold text-amber-900">Flavor & Weight:</span>
+              <span className="font-medium text-chocolate-900">{submittedRequest.cake_flavor} ({submittedRequest.cake_weight})</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-semibold text-amber-900">Delivery Slot:</span>
+              <span className="font-medium text-chocolate-900">{submittedRequest.delivery_date} at {submittedRequest.delivery_time}</span>
+            </div>
+            {submittedRequest.message && (
+              <div className="border-t border-amber-200 pt-2">
+                <span className="font-semibold text-amber-900">Cake Text:</span>
+                <p className="font-serif italic text-chocolate-900 mt-0.5">&quot;{submittedRequest.message}&quot;</p>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-3 pt-2">
+            <a
+              href={generatePhotoCakeWhatsAppUrl(submittedRequest)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-4 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 transition transform hover:scale-102"
+            >
+              <Send className="w-4 h-4" />
+              <span>Send Details to WhatsApp (+91 9347166241)</span>
+            </a>
+
+            <Link
+              href="/"
+              className="inline-block text-xs text-amber-800 hover:text-chocolate-900 font-semibold"
+            >
+              ← Back to High Bakery Storefront
+            </Link>
+          </div>
+        </div>
+      ) : (
+        /* Designer Form & Live Preview Grid */
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+          
+          {/* Left Column: Live Interactive Cake Canvas */}
+          <div className="lg:col-span-5 sticky top-28 space-y-4">
+            <div className="bg-white rounded-3xl p-6 border border-amber-200/80 shadow-lg text-center space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-amber-100">
+                <span className="text-xs font-bold text-chocolate-900 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                  Live Cake Preview
+                </span>
+                <span className="text-[10px] bg-amber-100 text-bakery-900 font-bold px-2 py-0.5 rounded-full">
+                  Interactive
+                </span>
+              </div>
+
+              {/* Real-time Cake Preview */}
+              <PhotoCakePreview
+                flavor={selectedFlavor}
+                weight={selectedWeight}
+                shape={selectedShape}
+                eggless={isEggless}
+                imageUrl={photoUrl}
+                message={cakeMessage}
+              />
+
+              <div className="bg-amber-50/80 rounded-2xl p-3 border border-amber-200 text-left space-y-1">
+                <div className="flex items-center gap-1.5 text-xs font-black text-chocolate-900">
+                  <span>📄 Print Size Spec:</span>
+                  <span className="text-amber-900 font-bold">Max 8.27 × 11.69 in (A4) or below</span>
+                </div>
+                <p className="text-[11px] text-amber-800/80 leading-relaxed">
+                  💡 Printed on 100% FDA-approved edible sugar sheet with food-grade inks. Scaled proportionally to fit your selected cake size (0.5kg – 5kg).
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Customization Controls & Booking Form */}
+          <div className="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 border border-amber-200/80 shadow-lg space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              
+              {/* Step 1: Upload Photo */}
+              <div className="space-y-3 pb-6 border-b border-amber-100">
+                <h2 className="font-serif font-bold text-base text-chocolate-900 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs flex items-center justify-center font-sans font-bold">
+                    1
+                  </span>
+                  Upload Your High-Resolution Photo
+                </h2>
+
+                <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-900 font-medium">
+                  <span className="font-bold">📐 Sugar Sheet Dimensions:</span>
+                  <span>Occupies 8.27 × 11.69 inches (A4 size) or below (custom fitted to cake)</span>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-amber-50 hover:bg-amber-100 text-bakery-900 border-2 border-dashed border-amber-300 font-bold text-xs flex items-center justify-center gap-2 transition"
+                  >
+                    <Upload className="w-4 h-4 text-bakery-600" />
+                    <span>{isUploading ? "Processing Image..." : "Choose Photo from Device"}</span>
+                  </button>
+
+                  <span className="text-xs text-amber-800/70">
+                    Supports JPG, PNG, WEBP (Max 15MB)
+                  </span>
+                </div>
+              </div>
+
+              {/* Step 2: Select Cake Flavor */}
+              <div className="space-y-3 pb-6 border-b border-amber-100">
+                <h2 className="font-serif font-bold text-base text-chocolate-900 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs flex items-center justify-center font-sans font-bold">
+                    2
+                  </span>
+                  Choose Cake Flavor
+                </h2>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                  {availableFlavors.map((f) => {
+                    const isSelected = selectedFlavor === f.name;
+                    return (
+                      <button
+                        key={f.name}
+                        type="button"
+                        onClick={() => setSelectedFlavor(f.name)}
+                        className={`p-3 rounded-2xl border text-left transition ${
+                          isSelected
+                            ? "bg-amber-100 border-bakery-600 ring-2 ring-bakery-500/20 shadow-sm"
+                            : "bg-white border-amber-200 hover:bg-amber-50/60"
+                        }`}
+                      >
+                        <p className="text-xs font-bold text-chocolate-900 leading-tight">
+                          {f.name}
+                        </p>
+                        <p className="text-[10px] text-bakery-700 font-semibold mt-1">
+                          {formatCurrency(f.pricePerKg)}/kg
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Step 3: Select Cake Shape (Square / Round / Heart) */}
+              <div className="space-y-3 pb-6 border-b border-amber-100">
+                <h2 className="font-serif font-bold text-base text-chocolate-900 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs flex items-center justify-center font-sans font-bold">
+                    3
+                  </span>
+                  Choose Cake Shape
+                </h2>
+
+                <div className="grid grid-cols-3 gap-2.5">
+                  {availableShapes.map((s) => {
+                    const isSelected = selectedShape === s.name;
+                    return (
+                      <button
+                        key={s.name}
+                        type="button"
+                        onClick={() => setSelectedShape(s.name)}
+                        className={`p-3 rounded-2xl border text-center transition ${
+                          isSelected
+                            ? "bg-amber-100 border-bakery-600 ring-2 ring-bakery-500/20 shadow-sm"
+                            : "bg-white border-amber-200 hover:bg-amber-50/60"
+                        }`}
+                      >
+                        <p className="text-xs font-bold text-chocolate-900 leading-tight">
+                          {s.label || s.name}
+                        </p>
+                        {s.extraPrice > 0 ? (
+                          <p className="text-[10px] text-amber-800 font-semibold mt-1">
+                            +{formatCurrency(s.extraPrice)}
+                          </p>
+                        ) : (
+                          <p className="text-[10px] text-emerald-700 font-semibold mt-1">
+                            Standard
+                          </p>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Step 4: Select Weight & Dietary Preference */}
+              <div className="space-y-3 pb-6 border-b border-amber-100">
+                <h2 className="font-serif font-bold text-base text-chocolate-900 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs flex items-center justify-center font-sans font-bold">
+                    4
+                  </span>
+                  Cake Weight & Eggless Option
+                </h2>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {availableWeights.map((w) => {
+                    const isSelected = selectedWeight === w.value;
+                    return (
+                      <button
+                        key={w.value}
+                        type="button"
+                        onClick={() => setSelectedWeight(w.value)}
+                        className={`p-2.5 rounded-xl border text-xs font-bold text-center transition ${
+                          isSelected
+                            ? "bg-chocolate-900 text-white border-chocolate-900 shadow-sm"
+                            : "bg-white text-chocolate-900 border-amber-200 hover:bg-amber-50"
+                        }`}
+                      >
+                        {w.label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="pt-2 flex items-center justify-between bg-amber-50/80 p-3 rounded-2xl border border-amber-200">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-emerald-600 inline-block"></span>
+                    <span className="text-xs font-bold text-chocolate-900">
+                      100% Eggless Bakery Sponge
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsEggless(!isEggless)}
+                    className={`w-12 h-6 rounded-full p-1 transition-colors ${
+                      isEggless ? "bg-emerald-600" : "bg-gray-300"
+                    }`}
+                  >
+                    <div
+                      className={`w-4 h-4 rounded-full bg-white transition-transform ${
+                        isEggless ? "translate-x-6" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                </div>
+              </div>
+
+              {/* Step 5: Message on Cake */}
+              <div className="space-y-3 pb-6 border-b border-amber-100">
+                <h2 className="font-serif font-bold text-base text-chocolate-900 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs flex items-center justify-center font-sans font-bold">
+                    5
+                  </span>
+                  Message to be Written on Cake
+                </h2>
+
+                <input
+                  type="text"
+                  maxLength={45}
+                  placeholder="e.g. Happy 1st Birthday Aarav! ❤️"
+                  value={cakeMessage}
+                  onChange={(e) => setCakeMessage(e.target.value)}
+                  className="w-full px-4 py-3 text-xs sm:text-sm rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-bakery-500/30 focus:border-bakery-500 font-medium text-chocolate-900"
+                />
+                <div className="flex justify-between text-[11px] text-amber-800/70">
+                  <span>Renders live on the cake above</span>
+                  <span>{cakeMessage.length}/45 chars</span>
+                </div>
+              </div>
+
+              {/* Step 6: Schedule & Customer Contact */}
+              <div className="space-y-4">
+                <h2 className="font-serif font-bold text-base text-chocolate-900 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs flex items-center justify-center font-sans font-bold">
+                    6
+                  </span>
+                  Store Pickup Schedule & Contact Information
+                </h2>
+
+                {/* Pickup Location Info */}
+                <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 flex items-center gap-2">
+                  <span className="font-bold">🏬 Pickup Location:</span>
+                  <span>High Bakery, Barrage Center, Bommika • Pay at Counter on Pickup</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-chocolate-900 mb-1 flex items-center gap-1.5">
+                      <User className="w-3.5 h-3.5 text-bakery-600" />
+                      Your Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Shekhar Rao / Sneha"
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-bakery-500/30"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-chocolate-900 mb-1 flex items-center gap-1.5">
+                      <Phone className="w-3.5 h-3.5 text-bakery-600" />
+                      WhatsApp Phone Number *
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      placeholder="e.g. +91 93471 66241"
+                      value={customerPhone}
+                      onChange={(e) => setCustomerPhone(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-bakery-500/30"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-chocolate-900 mb-1 flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-bakery-600" />
+                      Pickup Date *
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      value={deliveryDate}
+                      onChange={(e) => setDeliveryDate(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-bakery-500/30"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-chocolate-900 mb-1 flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-bakery-600" />
+                      Preferred Pickup Time Slot *
+                    </label>
+                    <select
+                      value={deliveryTime}
+                      onChange={(e) => setDeliveryTime(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-bakery-500/30 bg-white"
+                    >
+                      {activeTimeSlots.map((slot) => (
+                        <option key={slot} value={slot}>
+                          {slot}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-chocolate-900 mb-1 flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5 text-bakery-600" />
+                    Special Notes / Icing Color Preferences (Optional)
+                  </label>
+                  <textarea
+                    rows={2}
+                    placeholder="e.g. Please add extra chocolate curls around the border, delivering to Bommika Barrage"
+                    value={specialNotes}
+                    onChange={(e) => setSpecialNotes(e.target.value)}
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-bakery-500/30 resize-none"
+                  />
+                </div>
+              </div>
+
+              {/* Submit Action */}
+              <div className="pt-4 border-t border-amber-100 space-y-3">
+                <div className="flex justify-between items-center bg-amber-50 p-4 rounded-2xl border border-amber-200">
+                  <div>
+                    <span className="text-xs text-amber-800 block">Total Estimated Price</span>
+                    <span className="text-2xl font-extrabold text-chocolate-900">
+                      {formatCurrency(calculatedPrice)}
+                    </span>
+                  </div>
+
+                  <span className="text-[11px] text-bakery-800 bg-amber-100 px-3 py-1 rounded-full font-bold border border-amber-300">
+                    Includes Edible Print & Box
+                  </span>
+                </div>
+
+                {isPhotoCakeEnabled ? (
+                  <>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-bakery-600 to-amber-600 hover:from-amber-600 hover:to-bakery-700 text-white font-extrabold text-sm flex items-center justify-center gap-2.5 shadow-xl shadow-amber-500/25 transition transform hover:scale-102 active:scale-98 disabled:opacity-50"
+                    >
+                      <Send className="w-4 h-4" />
+                      <span>{isSubmitting ? "Submitting Custom Cake..." : "Submit Photo Cake & Send to WhatsApp"}</span>
+                    </button>
+
+                    <p className="text-[11px] text-center text-amber-800/80">
+                      ⚡ Auto-saves record to database & opens WhatsApp to Shekhar Rao (+91 9347166241)
+                    </p>
+                  </>
+                ) : (
+                  <div className="space-y-3">
+                    <button
+                      type="button"
+                      disabled
+                      className="w-full py-4 px-6 rounded-2xl bg-rose-50 text-rose-800 font-extrabold text-sm flex items-center justify-center gap-2 cursor-not-allowed border-2 border-rose-300 shadow-sm"
+                    >
+                      <span>🔒 Now it is not available</span>
+                    </button>
+                    <a
+                      href={`https://wa.me/919347166241?text=${encodeURIComponent(`Hello Shekhar Rao, I want to inquire about custom photo cake availability (${selectedFlavor}, ${selectedWeight}, ${selectedShape} shape).`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-3.5 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-md transition transform hover:scale-102"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      <span>Inquire via WhatsApp for Custom Order (+91 9347166241)</span>
+                    </a>
+                  </div>
+                )}
+              </div>
+
+            </form>
+          </div>
+
+        </div>
+      )}
+
+    </div>
+  );
+}
