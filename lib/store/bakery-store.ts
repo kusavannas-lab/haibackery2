@@ -403,6 +403,7 @@ export function useBakeryStore() {
                 if (data && data.length > 0) {
                   setOrders(data as Order[]);
                   localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(data));
+                  notifyUpdate();
                 }
               } catch {}
             }
@@ -419,6 +420,7 @@ export function useBakeryStore() {
                 if (data && data.length > 0) {
                   setPhotoCakes(data as PhotoCakeRequest[]);
                   localStorage.setItem(STORAGE_KEYS.PHOTO_CAKES, JSON.stringify(data));
+                  notifyUpdate();
                 }
               } catch {}
             }
@@ -435,6 +437,24 @@ export function useBakeryStore() {
                 if (data && data.length > 0) {
                   setProducts(data as Product[]);
                   localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(data));
+                  notifyUpdate();
+                }
+              } catch {}
+            }
+          )
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "categories" },
+            async () => {
+              try {
+                const { data } = await sb
+                  .from("categories")
+                  .select("*")
+                  .order("name");
+                if (data && data.length > 0) {
+                  setCategories(data as Category[]);
+                  localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(data));
+                  notifyUpdate();
                 }
               } catch {}
             }
@@ -445,7 +465,76 @@ export function useBakeryStore() {
       }
     }
 
+    // High-Frequency Auto-Sync Interval (3 seconds) for Cross-Device Instant Sync
+    const syncInterval = setInterval(async () => {
+      if (!isSupabaseConfigured() || !sb) return;
+      try {
+        // 1. Sync Orders
+        const { data: latestOrders } = await sb
+          .from("orders")
+          .select("*, items:order_items(*)")
+          .order("created_at", { ascending: false });
+        if (latestOrders && latestOrders.length > 0) {
+          setOrders((prev) => {
+            if (JSON.stringify(prev) !== JSON.stringify(latestOrders)) {
+              localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(latestOrders));
+              return latestOrders as Order[];
+            }
+            return prev;
+          });
+        }
+
+        // 2. Sync Products
+        const { data: latestProducts } = await sb
+          .from("products")
+          .select("*")
+          .order("created_at", { ascending: false });
+        if (latestProducts && latestProducts.length > 0) {
+          setProducts((prev) => {
+            if (JSON.stringify(prev) !== JSON.stringify(latestProducts)) {
+              localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(latestProducts));
+              return latestProducts as Product[];
+            }
+            return prev;
+          });
+        }
+
+        // 3. Sync Categories
+        const { data: latestCats } = await sb
+          .from("categories")
+          .select("*")
+          .order("name");
+        if (latestCats && latestCats.length > 0) {
+          setCategories((prev) => {
+            if (JSON.stringify(prev) !== JSON.stringify(latestCats)) {
+              localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(latestCats));
+              return latestCats as Category[];
+            }
+            return prev;
+          });
+        }
+
+        // 4. Sync Photo Cakes
+        const { data: latestPhotoCakes } = await sb
+          .from("photo_cake_requests")
+          .select("*")
+          .order("created_at", { ascending: false });
+        if (latestPhotoCakes && latestPhotoCakes.length > 0) {
+          setPhotoCakes((prev) => {
+            if (JSON.stringify(prev) !== JSON.stringify(latestPhotoCakes)) {
+              localStorage.setItem(STORAGE_KEYS.PHOTO_CAKES, JSON.stringify(latestPhotoCakes));
+              return latestPhotoCakes as PhotoCakeRequest[];
+            }
+            return prev;
+          });
+        }
+      } catch {
+        // silent background sync catch
+      }
+    }, 3000);
+
     return () => {
+      clearInterval(syncInterval);
       window.removeEventListener("hb_store_updated", handleStorageChange);
       window.removeEventListener("storage", handleStorageChange);
       if (realtimeChannel && isSupabaseConfigured() && sb) {

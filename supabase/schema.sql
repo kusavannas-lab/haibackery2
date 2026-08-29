@@ -236,3 +236,42 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 
+-- ==============================================================================
+-- ENABLE SUPABASE REALTIME FOR INSTANT MULTI-DEVICE BROADCASTS
+-- ==============================================================================
+
+DO $$
+BEGIN
+  -- Enable Realtime publication for orders, order_items, products, categories, and photo_cake_requests
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.orders;
+  EXCEPTION WHEN others THEN NULL;
+  END;
+
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.order_items;
+  EXCEPTION WHEN others THEN NULL;
+  END;
+
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.products;
+  EXCEPTION WHEN others THEN NULL;
+  END;
+
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.categories;
+  EXCEPTION WHEN others THEN NULL;
+  END;
+
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.photo_cake_requests;
+  EXCEPTION WHEN others THEN NULL;
+  END;
+END $$;
+
+ALTER TABLE public.orders REPLICA IDENTITY FULL;
+ALTER TABLE public.order_items REPLICA IDENTITY FULL;
+ALTER TABLE public.products REPLICA IDENTITY FULL;
+ALTER TABLE public.categories REPLICA IDENTITY FULL;
+ALTER TABLE public.photo_cake_requests REPLICA IDENTITY FULL;
+
