@@ -643,22 +643,38 @@ export function useBakeryStore() {
   };
   const addProduct = async (productData: Omit<Product, "id" | "created_at">) => {
     const newProduct: Product = {
-      ...productData,
       id: "prod-" + generateShortId("P").toLowerCase(),
+      title: productData.title.trim(),
+      description: productData.description?.trim() || "",
+      category_id: productData.category_id || "cat-sweets",
+      category_name: productData.category_name || "Sweets & Mithai",
+      price: Number(productData.price) || 0,
+      cost_price: Number(productData.cost_price) || 0,
+      stock_count: Number(productData.stock_count) || 50,
+      image_url: productData.image_url?.trim() || "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600",
+      unit: productData.unit?.trim() || "500g",
+      in_stock: productData.in_stock !== false,
+      is_visible: productData.is_visible !== false,
+      is_admin_added: true,
       created_at: new Date().toISOString(),
     };
 
     if (isSupabaseConfigured() && supabase) {
       try {
-        await supabase.from("products").insert([newProduct]);
+        const { error } = await supabase.from("products").insert([newProduct]);
+        if (error) {
+          console.error("Supabase insert product error:", error);
+        }
       } catch (err) {
-        console.error("Supabase insert product error:", err);
+        console.error("Supabase insert product exception:", err);
       }
     }
 
     const updated = [newProduct, ...products];
     setProducts(updated);
-    localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(updated));
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(updated));
+    }
     notifyUpdate();
     return newProduct;
   };
@@ -666,30 +682,40 @@ export function useBakeryStore() {
   const updateProduct = async (id: string, updates: Partial<Product>) => {
     if (isSupabaseConfigured() && supabase) {
       try {
-        await supabase.from("products").update(updates).eq("id", id);
+        const { error } = await supabase.from("products").update(updates).eq("id", id);
+        if (error) {
+          console.error("Supabase update product error:", error);
+        }
       } catch (err) {
-        console.error("Supabase update product error:", err);
+        console.error("Supabase update product exception:", err);
       }
     }
 
     const updated = products.map((p) => (p.id === id ? { ...p, ...updates } : p));
     setProducts(updated);
-    localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(updated));
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(updated));
+    }
     notifyUpdate();
   };
 
   const deleteProduct = async (id: string) => {
     if (isSupabaseConfigured() && supabase) {
       try {
-        await supabase.from("products").delete().eq("id", id);
+        const { error } = await supabase.from("products").delete().eq("id", id);
+        if (error) {
+          console.error("Supabase delete product error:", error);
+        }
       } catch (err) {
-        console.error("Supabase delete product error:", err);
+        console.error("Supabase delete product exception:", err);
       }
     }
 
     const updated = products.filter((p) => p.id !== id);
     setProducts(updated);
-    localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(updated));
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(updated));
+    }
     notifyUpdate();
   };
 
