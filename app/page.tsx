@@ -249,7 +249,38 @@ export default function HomePage() {
         </div>
 
         {/* Products Display (Divided by Separate Categories) */}
-        {selectedCategory === "all" ? (
+        {visibleProducts.length === 0 ? (
+          <div className="text-center py-16 bg-white rounded-3xl border-2 border-dashed border-amber-300 p-8 space-y-4 shadow-sm max-w-2xl mx-auto">
+            <div className="w-16 h-16 rounded-3xl bg-amber-100 flex items-center justify-center text-amber-700 mx-auto shadow-inner">
+              <Cake className="w-8 h-8" />
+            </div>
+            <div className="space-y-1 max-w-md mx-auto">
+              <p className="text-lg font-serif font-bold text-chocolate-900">
+                Fresh Batches Are Baking!
+              </p>
+              <p className="text-xs text-amber-800/80 leading-relaxed">
+                Our kitchen at Barrage Center, Bommika is preparing fresh batches. Items added by Shekhar Rao in the Admin Console will appear here in real time.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+              <Link
+                href="/photo-cake"
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-orange-600 text-white font-bold text-xs shadow-md transition"
+              >
+                📸 Design Custom Photo Cake
+              </Link>
+              <a
+                href={`https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent('Hi Shekhar Rao, I want to inquire about High Bakery products.')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition flex items-center gap-1.5"
+              >
+                <Phone className="w-3.5 h-3.5" />
+                WhatsApp Inquiry
+              </a>
+            </div>
+          </div>
+        ) : selectedCategory === "all" ? (
           <div className="space-y-14">
             {visibleCategories.map((cat) => {
               const catProducts = visibleProducts

@@ -230,12 +230,11 @@ export function useBakeryStore() {
         let loadedProds: Product[] = [];
         if (isSupabaseConfigured() && supabase) {
           const { data } = await supabase.from("products").select("*").order("created_at", { ascending: false });
-          if (data && data.length > 0) {
+          if (data) {
             loadedProds = data as Product[];
             localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(loadedProds));
           }
-        }
-        if (loadedProds.length === 0) {
+        } else {
           const localProds = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
           loadedProds = localProds ? JSON.parse(localProds) : INITIAL_PRODUCTS;
         }
@@ -248,11 +247,11 @@ export function useBakeryStore() {
             .from("orders")
             .select("*, items:order_items(*)")
             .order("created_at", { ascending: false });
-          if (data && data.length > 0) {
+          if (data) {
             loadedOrders = data as Order[];
+            localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(loadedOrders));
           }
-        }
-        if (loadedOrders.length === 0) {
+        } else {
           const localOrders = localStorage.getItem(STORAGE_KEYS.ORDERS);
           loadedOrders = localOrders ? JSON.parse(localOrders) : INITIAL_ORDERS;
         }
@@ -265,14 +264,15 @@ export function useBakeryStore() {
             .from("photo_cake_requests")
             .select("*")
             .order("created_at", { ascending: false });
-          if (data && data.length > 0) {
+          if (data) {
             loadedPhotoCakes = data as PhotoCakeRequest[];
+            localStorage.setItem(STORAGE_KEYS.PHOTO_CAKES, JSON.stringify(loadedPhotoCakes));
           }
-        }
-        if (loadedPhotoCakes.length === 0) {
+        } else {
           const localPhotoCakes = localStorage.getItem(STORAGE_KEYS.PHOTO_CAKES);
           loadedPhotoCakes = localPhotoCakes ? JSON.parse(localPhotoCakes) : INITIAL_PHOTO_CAKES;
         }
+        setPhotoCakes(loadedPhotoCakes);
         // 6. Load Bulk Catalog
         let loadedBulk: BulkCatalogItem[] = [];
         if (isSupabaseConfigured() && supabase) {
@@ -474,7 +474,7 @@ export function useBakeryStore() {
           .from("orders")
           .select("*, items:order_items(*)")
           .order("created_at", { ascending: false });
-        if (latestOrders && latestOrders.length > 0) {
+        if (latestOrders !== null && latestOrders !== undefined) {
           const enrichedOrders = (latestOrders as any[]).map((o) => ({
             ...o,
             items: (o.items || []).map((it: any) => ({
@@ -497,7 +497,7 @@ export function useBakeryStore() {
           .from("products")
           .select("*")
           .order("created_at", { ascending: false });
-        if (latestProducts && latestProducts.length > 0) {
+        if (latestProducts !== null && latestProducts !== undefined) {
           setProducts((prev) => {
             if (JSON.stringify(prev) !== JSON.stringify(latestProducts)) {
               localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(latestProducts));
@@ -512,7 +512,7 @@ export function useBakeryStore() {
           .from("categories")
           .select("*")
           .order("name");
-        if (latestCats && latestCats.length > 0) {
+        if (latestCats !== null && latestCats !== undefined && latestCats.length > 0) {
           setCategories((prev) => {
             if (JSON.stringify(prev) !== JSON.stringify(latestCats)) {
               localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(latestCats));
@@ -527,7 +527,7 @@ export function useBakeryStore() {
           .from("photo_cake_requests")
           .select("*")
           .order("created_at", { ascending: false });
-        if (latestPhotoCakes && latestPhotoCakes.length > 0) {
+        if (latestPhotoCakes !== null && latestPhotoCakes !== undefined) {
           setPhotoCakes((prev) => {
             if (JSON.stringify(prev) !== JSON.stringify(latestPhotoCakes)) {
               localStorage.setItem(STORAGE_KEYS.PHOTO_CAKES, JSON.stringify(latestPhotoCakes));
