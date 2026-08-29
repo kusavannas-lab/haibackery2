@@ -32,7 +32,8 @@ export default function HomePage() {
   // Filter products by selected category
   const filteredProducts = visibleProducts.filter((product) => {
     if (selectedCategory === "all") return true;
-    return product.category_id === selectedCategory;
+    const cat = visibleCategories.find((c) => c.id === selectedCategory);
+    return product.category_id === selectedCategory || (cat && product.category_name === cat.name);
   });
 
   // Sort products
@@ -283,7 +284,7 @@ export default function HomePage() {
           </button>
 
           {visibleCategories.map((cat) => {
-            const count = visibleProducts.filter((p) => p.category_id === cat.id).length;
+            const count = visibleProducts.filter((p) => p.category_id === cat.id || p.category_name === cat.name).length;
             const isSelected = selectedCategory === cat.id;
             return (
               <button

@@ -475,10 +475,18 @@ export function useBakeryStore() {
           .select("*, items:order_items(*)")
           .order("created_at", { ascending: false });
         if (latestOrders && latestOrders.length > 0) {
+          const enrichedOrders = (latestOrders as any[]).map((o) => ({
+            ...o,
+            items: (o.items || []).map((it: any) => ({
+              ...it,
+              product_title: it.product_title || (latestProducts || []).find((p: any) => p.id === it.product_id)?.title || "Bakery Item",
+            })),
+          }));
           setOrders((prev) => {
-            if (JSON.stringify(prev) !== JSON.stringify(latestOrders)) {
-              localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(latestOrders));
-              return latestOrders as Order[];
+            if (JSON.stringify(prev) !== JSON.stringify(enrichedOrders)) {
+              localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(enrichedOrders));
+              notifyUpdate();
+              return enrichedOrders as Order[];
             }
             return prev;
           });
