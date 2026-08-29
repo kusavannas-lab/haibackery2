@@ -45,7 +45,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { user, isAdmin, orders, photoCakes, products, categories, bulkCatalog, loginAsAdmin, loginWithGoogle, logout } = useBakeryStore();
+  const { user, isAdmin, orders, photoCakes, products, categories, bulkCatalog, loginWithGoogle, logout } = useBakeryStore();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const pendingOrdersCount = orders.filter((o) => o.status === "Pending" || o.status === "Baking").length;
@@ -107,8 +107,25 @@ export default function AdminLayout({
     },
   ];
 
-  // STRICT ACCESS GUARD: Only haibackery@gmail.com can enter the admin portal
+  // STRICT ACCESS GUARD: Only verified haibackery@gmail.com can enter the admin portal
   if (!user.isLoggedIn || !isAdmin) {
+    const handleLaunchGoogleOAuth = () => {
+      const rootUrl = "https://accounts.google.com/o/oauth2/v2/auth";
+      const clientId = "487079166794-s5t2jetkpqt71rojslm15af96c54nmkd.apps.googleusercontent.com";
+      const redirectUri = typeof window !== "undefined" ? window.location.origin + "/login" : "";
+
+      const options = {
+        redirect_uri: redirectUri,
+        client_id: clientId,
+        response_type: "token",
+        prompt: "select_account",
+        scope: "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
+      };
+
+      const qs = new URLSearchParams(options);
+      window.location.assign(`${rootUrl}?${qs.toString()}`);
+    };
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#220d05] via-[#3d1809] to-[#1a0903] flex items-center justify-center px-4 py-16">
         <div className="w-full max-w-md bg-white rounded-3xl p-8 sm:p-10 border-2 border-amber-400 shadow-2xl space-y-6 text-center animate-in zoom-in-95">
@@ -116,18 +133,22 @@ export default function AdminLayout({
           {/* Logo & Name */}
           <div className="space-y-3">
             <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 flex items-center justify-center text-white mx-auto shadow-xl shadow-amber-500/30">
-              <Cake className="w-9 h-9" />
+              <Lock className="w-8 h-8 text-white" />
             </div>
 
-            <h1 className="font-serif font-black text-3xl text-chocolate-900 tracking-tight">
-              High <span className="text-amber-600">Bakery</span>
+            <h1 className="font-serif font-black text-2xl text-chocolate-900 tracking-tight">
+              Admin Portal <span className="text-amber-600">Restricted</span>
             </h1>
+            <p className="text-xs text-amber-900/80 leading-relaxed">
+              This area is strictly restricted to the High Bakery proprietor (<strong>haibackery@gmail.com</strong>). Please authenticate with your official Google account.
+            </p>
           </div>
 
-          {/* Single Official Google Sign-In */}
-          <div className="pt-2">
+          {/* Official Google OAuth Verification */}
+          <div className="space-y-3 pt-2">
             <button
-              onClick={() => loginWithGoogle("haibackery@gmail.com", "Shekhar Rao (Admin)")}
+              type="button"
+              onClick={handleLaunchGoogleOAuth}
               className="w-full py-4 px-6 bg-white border-2 border-amber-400 hover:border-amber-500 rounded-2xl text-sm font-black text-gray-800 hover:bg-amber-50/50 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition transform hover:scale-[1.01] active:scale-95"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -148,8 +169,16 @@ export default function AdminLayout({
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                 />
               </svg>
-              <span>Sign in with Google</span>
+              <span>Verify with Google (haibackery@gmail.com)</span>
             </button>
+
+            <Link
+              href="/"
+              className="w-full py-3 px-4 bg-amber-50 hover:bg-amber-100 text-chocolate-900 border border-amber-200 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition"
+            >
+              <Store className="w-4 h-4 text-bakery-600" />
+              <span>← Return to Customer Storefront</span>
+            </Link>
           </div>
 
         </div>

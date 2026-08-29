@@ -120,15 +120,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleQuickAdminLogin = async () => {
-    setEmail("haibackery@gmail.com");
-    setIsSubmitting(true);
-    const result = await loginWithEmail("haibackery@gmail.com", "Shekhar Rao");
-    setSuccessMsg("Admin Authorized: Shekhar Rao (haibackery@gmail.com)");
-    setTimeout(() => {
-      router.push("/admin/executive");
-    }, 600);
-  };
 
   return (
     <div className="min-h-[85vh] flex items-center justify-center px-4 py-12 bg-gradient-to-b from-amber-100/40 via-white to-amber-50">

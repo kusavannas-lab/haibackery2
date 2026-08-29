@@ -560,14 +560,13 @@ export function useBakeryStore() {
   };
 
   // Auth Operations
-  const loginWithGoogle = async (targetEmail: string = "haibackery@gmail.com", userName: string = "Shekhar Rao") => {
+  const loginWithGoogle = async (targetEmail: string = "", userName?: string) => {
     const cleanEmail = targetEmail.toLowerCase().trim();
     const isAdmin = cleanEmail === "haibackery@gmail.com";
 
-    // Direct Instant Google Auth Session (Reliable on all devices without external provider dependency)
     const sessionUser: UserSession = {
-      email: cleanEmail,
-      name: userName || (isAdmin ? "Shekhar Rao (Admin)" : "Google Customer"),
+      email: cleanEmail || "customer@highbakery.in",
+      name: userName || (isAdmin ? "Shekhar Rao (Admin)" : "Valued Customer"),
       role: isAdmin ? "admin" : "customer",
       isLoggedIn: true,
     };
@@ -583,11 +582,13 @@ export function useBakeryStore() {
     if (cleanEmail === "haibackery@gmail.com") {
       const adminUser: UserSession = {
         email: "haibackery@gmail.com",
-        name: "Shekhar Rao (Admin)",
+        name: name?.trim() || "Shekhar Rao (Admin)",
         role: "admin",
         isLoggedIn: true,
       };
-      localStorage.setItem(STORAGE_KEYS.DEMO_USER, JSON.stringify(adminUser));
+      if (typeof window !== "undefined") {
+        localStorage.setItem(STORAGE_KEYS.DEMO_USER, JSON.stringify(adminUser));
+      }
       setUser(adminUser);
       notifyUpdate();
       return { success: true, isAdmin: true, message: "Welcome Shekhar Rao! Redirecting to Executive Admin Portal..." };
@@ -598,23 +599,13 @@ export function useBakeryStore() {
         role: "customer",
         isLoggedIn: true,
       };
-      localStorage.setItem(STORAGE_KEYS.DEMO_USER, JSON.stringify(customerUser));
+      if (typeof window !== "undefined") {
+        localStorage.setItem(STORAGE_KEYS.DEMO_USER, JSON.stringify(customerUser));
+      }
       setUser(customerUser);
       notifyUpdate();
       return { success: true, isAdmin: false, message: "Welcome to High Bakery! Logged in as customer." };
     }
-  };
-
-  const loginAsAdmin = async (force: boolean = true) => {
-    const adminUser: UserSession = {
-      email: "haibackery@gmail.com",
-      name: "Shekhar Rao (Admin)",
-      role: "admin",
-      isLoggedIn: true,
-    };
-    localStorage.setItem(STORAGE_KEYS.DEMO_USER, JSON.stringify(adminUser));
-    setUser(adminUser);
-    notifyUpdate();
   };
 
   const logout = async () => {
@@ -1316,7 +1307,6 @@ export function useBakeryStore() {
     // Actions
     loginWithGoogle,
     loginWithEmail,
-    loginAsAdmin,
     logout,
     clearAllDemoData,
     addProduct,

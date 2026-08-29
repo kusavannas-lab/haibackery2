@@ -192,29 +192,18 @@ export default function GlobalAuthGate({ children }: { children: React.ReactNode
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                 />
               </svg>
-              <span>{isSubmitting ? "Connecting..." : "Sign in with Google"}</span>
+              <span>{isSubmitting ? "Connecting to Google..." : "Sign in with Google"}</span>
             </button>
 
-            {/* Quick 1-Click Shekhar Rao Admin Login */}
+            {/* Customer Storefront Access */}
             <button
               type="button"
-              onClick={() => handleGoogleAuthAccount("haibackery@gmail.com", "Shekhar Rao (Admin)")}
+              onClick={() => handleGoogleAuthAccount("customer@highbakery.in", "Valued Customer")}
               disabled={isSubmitting}
-              className="w-full py-3 px-6 bg-gradient-to-r from-amber-500 to-bakery-600 hover:from-amber-600 hover:to-bakery-700 text-white rounded-2xl text-xs font-bold flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition transform hover:scale-[1.01] active:scale-95 disabled:opacity-50"
+              className="w-full py-3 px-4 bg-amber-50 hover:bg-amber-100 text-chocolate-900 border border-amber-300 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition"
             >
-              <ShieldCheck className="w-4 h-4" />
-              <span>1-Click Admin Access (haibackery@gmail.com)</span>
-            </button>
-
-            {/* Quick Customer Storefront Access */}
-            <button
-              type="button"
-              onClick={() => handleGoogleAuthAccount("customer@gmail.com", "Valued Customer")}
-              disabled={isSubmitting}
-              className="w-full py-2.5 px-4 bg-amber-50 hover:bg-amber-100 text-chocolate-900 border border-amber-200 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition"
-            >
-              <ShoppingBag className="w-3.5 h-3.5 text-bakery-600" />
-              <span>Continue to Storefront as Customer</span>
+              <ShoppingBag className="w-4 h-4 text-bakery-600" />
+              <span>Browse High Bakery as Customer</span>
             </button>
           </div>
 

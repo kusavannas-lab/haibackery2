@@ -27,7 +27,7 @@ import { ADMIN_PHONE } from "@/lib/whatsapp";
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { visibleCategories, visibleProducts, photoCakeConfig, user, isAdmin, loginAsAdmin, loginWithGoogle, logout } = useBakeryStore();
+  const { visibleCategories, visibleProducts, photoCakeConfig, user, isAdmin, loginWithGoogle, logout } = useBakeryStore();
   const { itemCount, openCart } = useCartStore();
 
   const isPhotoCakeEnabled = photoCakeConfig?.is_enabled !== false;
@@ -449,26 +449,24 @@ export default function Navbar() {
               ))}
             </div>
 
-            {/* Admin Switcher for Mobile */}
+            {/* Admin Link for Mobile */}
             <div className="pt-2 border-t border-amber-100 flex gap-2">
               {isAdmin ? (
                 <Link
-                  href="/admin/inventory"
+                  href="/admin/executive"
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex-1 py-2.5 bg-amber-100 text-bakery-900 text-center font-bold text-xs rounded-xl border border-amber-300"
                 >
-                  👑 Open Admin Dashboards
+                  👑 Open Admin Portal
                 </Link>
               ) : (
-                <button
-                  onClick={() => {
-                    loginAsAdmin();
-                    setMobileMenuOpen(false);
-                  }}
-                  className="flex-1 py-2.5 bg-amber-100 text-bakery-900 text-center font-bold text-xs rounded-xl border border-amber-300"
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex-1 py-2.5 bg-amber-50 text-chocolate-900 text-center font-bold text-xs rounded-xl border border-amber-200"
                 >
-                  Admin Access (Shekhar Rao)
-                </button>
+                  Admin Sign In
+                </Link>
               )}
             </div>
           </div>
