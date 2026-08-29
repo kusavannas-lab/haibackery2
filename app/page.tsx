@@ -179,65 +179,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 2. Custom Photo Cake Dedicated Spotlight Banner */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-chocolate-950 via-bakery-950 to-chocolate-900 text-white p-8 sm:p-12 shadow-2xl border border-amber-500/30">
-          
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
-            <div className="lg:col-span-8 space-y-4 text-center lg:text-left">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold border border-amber-500/30">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>Special Feature • High Bakery Bommika</span>
-              </div>
-
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-white leading-tight">
-                Turn Your Favorite Memories Into <br />
-                <span className="text-amber-400">Delicious Edible Photo Cakes</span>
-              </h2>
-
-              <p className="text-sm text-amber-200/90 max-w-xl leading-relaxed">
-                Upload your family, birthday, or anniversary photo. Choose your flavor (Chocolate Truffle, Red Velvet, Butterscotch) and custom message. We print with 100% edible sugar ink!
-              </p>
-
-              <div className="pt-2 flex flex-wrap gap-4 justify-center lg:justify-start">
-                <Link
-                  href="/photo-cake"
-                  className="px-6 py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-chocolate-950 font-extrabold text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-amber-500/30 transition transform hover:scale-105"
-                >
-                  <Camera className="w-4 h-4" />
-                  <span>Design Photo Cake Now</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-                
-                <a
-                  href={`https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent('Hi Shekhar Rao, I want to inquire about custom photo cake designs.')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-5 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs sm:text-sm flex items-center gap-2 border border-white/20 transition"
-                >
-                  <Phone className="w-4 h-4 text-emerald-400" />
-                  <span>WhatsApp Inquiry</span>
-                </a>
-              </div>
-            </div>
-
-            <div className="lg:col-span-4 flex justify-center">
-              <div className="relative w-48 sm:w-56 aspect-square rounded-full border-4 border-amber-400/80 p-2 shadow-2xl bg-black/40">
-                <img
-                  src="https://images.unsplash.com/photo-1535141192574-5d4897c13136?auto=format&fit=crop&w=400&q=80"
-                  alt="Custom Photo Cake Preview"
-                  className="w-full h-full object-cover rounded-full"
-                />
-                <div className="absolute -bottom-2 inset-x-4 bg-amber-500 text-chocolate-950 text-[10px] font-black text-center py-1 rounded-full shadow">
-                  📸 100% Edible Sugar Sheet
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. Product Catalog Section */}
+      {/* 2. Product Catalog Section */}
       <section id="catalog-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 scroll-mt-24">
         
         {/* Section Heading & Category Filter Controls */}
