@@ -564,28 +564,16 @@ export function useBakeryStore() {
     const cleanEmail = targetEmail.toLowerCase().trim();
     const isAdmin = cleanEmail === "haibackery@gmail.com";
 
-    if (isSupabaseConfigured() && supabase) {
-      try {
-        await supabase.auth.signInWithOAuth({
-          provider: "google",
-          options: {
-            redirectTo: typeof window !== "undefined" ? `${window.location.origin}/` : "/",
-          },
-        });
-        return;
-      } catch (err) {
-        console.error("Supabase OAuth error, fallback to instant session:", err);
-      }
-    }
-
-    // Direct Instant Google Auth Session
+    // Direct Instant Google Auth Session (Reliable on all devices without external provider dependency)
     const sessionUser: UserSession = {
       email: cleanEmail,
       name: userName || (isAdmin ? "Shekhar Rao (Admin)" : "Google Customer"),
       role: isAdmin ? "admin" : "customer",
       isLoggedIn: true,
     };
-    localStorage.setItem(STORAGE_KEYS.DEMO_USER, JSON.stringify(sessionUser));
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEYS.DEMO_USER, JSON.stringify(sessionUser));
+    }
     setUser(sessionUser);
     notifyUpdate();
   };

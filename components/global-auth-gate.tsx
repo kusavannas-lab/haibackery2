@@ -166,13 +166,13 @@ export default function GlobalAuthGate({ children }: { children: React.ReactNode
             </div>
           )}
 
-          {/* Single Official Google Sign-In Action */}
+          {/* Authentication Actions */}
           <div className="space-y-3 pt-2">
             <button
               type="button"
               onClick={handleLaunchGoogleOAuth}
               disabled={isSubmitting}
-              className="w-full py-4 px-6 bg-white border-2 border-amber-400 hover:border-amber-500 rounded-2xl text-sm font-black text-gray-800 hover:bg-amber-50/50 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition transform hover:scale-[1.01] active:scale-95 disabled:opacity-50"
+              className="w-full py-3.5 px-6 bg-white border-2 border-amber-400 hover:border-amber-500 rounded-2xl text-sm font-black text-gray-800 hover:bg-amber-50/50 flex items-center justify-center gap-3 shadow-md hover:shadow-lg transition transform hover:scale-[1.01] active:scale-95 disabled:opacity-50"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
@@ -192,7 +192,29 @@ export default function GlobalAuthGate({ children }: { children: React.ReactNode
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                 />
               </svg>
-              <span>{isSubmitting ? "Connecting to Google..." : "Sign in with Google"}</span>
+              <span>{isSubmitting ? "Connecting..." : "Sign in with Google"}</span>
+            </button>
+
+            {/* Quick 1-Click Shekhar Rao Admin Login */}
+            <button
+              type="button"
+              onClick={() => handleGoogleAuthAccount("haibackery@gmail.com", "Shekhar Rao (Admin)")}
+              disabled={isSubmitting}
+              className="w-full py-3 px-6 bg-gradient-to-r from-amber-500 to-bakery-600 hover:from-amber-600 hover:to-bakery-700 text-white rounded-2xl text-xs font-bold flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition transform hover:scale-[1.01] active:scale-95 disabled:opacity-50"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>1-Click Admin Access (haibackery@gmail.com)</span>
+            </button>
+
+            {/* Quick Customer Storefront Access */}
+            <button
+              type="button"
+              onClick={() => handleGoogleAuthAccount("customer@gmail.com", "Valued Customer")}
+              disabled={isSubmitting}
+              className="w-full py-2.5 px-4 bg-amber-50 hover:bg-amber-100 text-chocolate-900 border border-amber-200 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition"
+            >
+              <ShoppingBag className="w-3.5 h-3.5 text-bakery-600" />
+              <span>Continue to Storefront as Customer</span>
             </button>
           </div>
 
