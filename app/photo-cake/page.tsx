@@ -255,7 +255,7 @@ export default function PhotoCakePage() {
                 Personalized Photo Cake Designer 🎂
               </h1>
               <p className="text-xs sm:text-sm text-amber-900/70">
-                High-resolution edible photo printing on fresh bakery cakes in Bommika, Hiramandalam.
+                High-resolution edible photo printing on fresh bakery cakes in Barrage Center, Hiramandalam.
               </p>
             </div>
 
@@ -599,7 +599,7 @@ export default function PhotoCakePage() {
                 {/* Pickup Location Info */}
                 <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 flex items-center gap-2">
                   <span className="font-bold">🏬 Pickup Location:</span>
-                  <span>Hai Backery, Barrage Center, Bommika • Pay at Counter on Pickup</span>
+                  <span>Hai Backery, Barrage Center • Pay at Counter on Pickup</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -673,7 +673,7 @@ export default function PhotoCakePage() {
                   </label>
                   <textarea
                     rows={2}
-                    placeholder="e.g. Please add extra chocolate curls around the border, delivering to Bommika Barrage"
+                    placeholder="e.g. Please add extra chocolate curls around the border, delivering to Barrage Center"
                     value={specialNotes}
                     onChange={(e) => setSpecialNotes(e.target.value)}
                     className="w-full px-3.5 py-2 text-xs rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-bakery-500/30 resize-none"

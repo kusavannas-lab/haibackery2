@@ -75,7 +75,7 @@ export default function BulkOrdersPage() {
   const [customerPhone, setCustomerPhone] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [eventTime, setEventTime] = useState("Morning (8:00 AM - 12:00 PM)");
-  const [deliveryLocation, setDeliveryLocation] = useState("Bommika / Hiramandalam Delivery");
+  const [deliveryLocation, setDeliveryLocation] = useState("Barrage Center / Hiramandalam Delivery");
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [customPackaging, setCustomPackaging] = useState("Standard Fresh Bakery Boxes");
   const [notes, setNotes] = useState("");
@@ -366,7 +366,7 @@ export default function BulkOrdersPage() {
               </span>
               <span className="text-xs text-amber-300 font-bold flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">
                 <Truck className="w-4 h-4 text-amber-400" />
-                <span>On-Time Event Delivery in Bommika</span>
+                <span>On-Time Event Delivery in Barrage Center</span>
               </span>
             </div>
           </div>
@@ -864,7 +864,7 @@ export default function BulkOrdersPage() {
                       onChange={(e) => setDeliveryLocation(e.target.value)}
                       className="w-full px-3.5 py-2.5 text-xs rounded-xl border-2 border-amber-200 focus:border-amber-500 focus:outline-none bg-white font-bold text-chocolate-900"
                     >
-                      <option value="Bommika Local Delivery">Bommika Local Delivery</option>
+                      <option value="Barrage Center Local Delivery">Barrage Center Local Delivery</option>
                       <option value="Hiramandalam Town Delivery">Hiramandalam Town Delivery</option>
                       <option value="Self Pickup at Hai Backery Counter (Barrage Center)">Self Pickup at Hai Backery Counter (Barrage Center)</option>
                       <option value="Srikakulam District Outstation Delivery">Srikakulam District Outstation Delivery</option>
@@ -988,7 +988,7 @@ export default function BulkOrdersPage() {
                 Official Bulk Sweet & KG Rate Card
               </h3>
               <p className="text-xs text-amber-800/80">
-                Photos, prices, and availability managed by Shekhar Rao at Barrage Center, Bommika.
+                Photos, prices, and availability managed by Shekhar Rao at Barrage Center, Hiramandalam.
               </p>
             </div>
             <span className="text-xs font-black text-amber-900 bg-amber-50 px-3.5 py-1.5 rounded-xl border border-amber-300 w-fit">

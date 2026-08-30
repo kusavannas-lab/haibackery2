@@ -115,7 +115,7 @@ export default function AdminCakeSuggestionsPage() {
 
     const quotedText = sug.quoted_price && sug.quoted_price > 0 ? `\n💰 *Estimated Quotation:* ₹${sug.quoted_price}` : "";
     const message = `Namaste ${sug.customer_name} garu! 🙏\n` +
-      `This is Shekhar Rao from *Hai Backery (Bommika)*.\n` +
+      `This is Shekhar Rao from *Hai Backery (Barrage Center)*.\n` +
       `Regarding your Custom Cake Request (*ID: ${sug.id}*) for *${sug.occasion || "Celebration"}* on *${sug.needed_date}*:\n` +
       `🍰 *Flavor & Weight:* ${sug.preferred_flavor} (${sug.estimated_weight})\n` +
       quotedText +

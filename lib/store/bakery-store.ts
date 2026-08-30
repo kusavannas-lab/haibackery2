@@ -36,7 +36,7 @@ export const INITIAL_LOGIN_THEME: LoginThemeConfig = {
   overlay_opacity: 45,
   overlay_color: "chocolate",
   headline: "Welcome to Hai Backery",
-  tagline: "Authentic Pure Ghee Sweets & Custom Designer Cakes • Bommika",
+  tagline: "Authentic Pure Ghee Sweets & Custom Designer Cakes • Barrage Center",
   badge_text: "FRESH BAKERY COUNTER & SWEET STUDIO",
   card_style: "white",
 };

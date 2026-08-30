@@ -77,7 +77,7 @@ export default function HomePage() {
               {/* Badge */}
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-100/90 border border-amber-300/70 text-bakery-900 text-xs font-bold shadow-sm">
                 <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
-                <span>Barrage Center, Bommika • Freshly Baked Every Day</span>
+                <span>Barrage Center, Hiramandalam • Freshly Baked Every Day</span>
               </div>
 
               {/* Main Headline */}
@@ -90,7 +90,7 @@ export default function HomePage() {
 
               {/* Description */}
               <p className="text-base sm:text-lg text-amber-950/80 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Welcome to <strong>Hai Backery</strong> by Shekhar Rao. Enjoy rich pure ghee sweets, melt-in-mouth Osmania biscuits, celebration cakes, and custom photo cakes freshly baked at Barrage Center, Bommika. Order online and pickup at counter!
+                Welcome to <strong>Hai Backery</strong> by Shekhar Rao. Enjoy rich pure ghee sweets, melt-in-mouth Osmania biscuits, celebration cakes, and custom photo cakes freshly baked at Barrage Center. Order online and pickup at counter!
               </p>
 
               {/* CTA Action Buttons */}
@@ -226,7 +226,7 @@ export default function HomePage() {
               Our Bakery & Sweet Catalog
             </h2>
             <p className="text-xs sm:text-sm text-amber-900/70">
-              Handmade daily at Barrage Center, Bommika with pure ingredients.
+              Handmade daily at Barrage Center with pure ingredients.
             </p>
           </div>
 
@@ -293,7 +293,7 @@ export default function HomePage() {
                 Fresh Batches Are Baking!
               </p>
               <p className="text-xs text-amber-800/80 leading-relaxed">
-                Our kitchen at Barrage Center, Bommika is preparing fresh batches. Items added by Shekhar Rao in the Admin Console will appear here in real time.
+                Our kitchen at Barrage Center is preparing fresh batches. Items added by Shekhar Rao in the Admin Console will appear here in real time.
               </p>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
@@ -457,7 +457,7 @@ export default function HomePage() {
             </h2>
 
             <p className="text-xs sm:text-sm text-amber-200/90 leading-relaxed">
-              Get authentic pure ghee sweets, snack gift boxes, celebration cakes, and crispy savories in large quantities at transparent, fixed rates per KG. Delivered directly to your event venue across Bommika & Hiramandalam.
+              Get authentic pure ghee sweets, snack gift boxes, celebration cakes, and crispy savories in large quantities at transparent, fixed rates per KG. Delivered directly to your event venue across Barrage Center & Hiramandalam.
             </p>
 
             <div className="pt-2 flex flex-wrap items-center gap-4">
@@ -497,7 +497,7 @@ export default function HomePage() {
               Our Quality Promise
             </span>
             <h2 className="text-3xl font-serif font-extrabold text-chocolate-900">
-              Why Bommika & Hiramandalam Loves Us
+              Why Barrage Center & Hiramandalam Loves Us
             </h2>
             <p className="text-xs sm:text-sm text-amber-900/75">
               High standards of taste, hygiene, and authentic flavors since day one.
@@ -559,7 +559,7 @@ export default function HomePage() {
               <span>Visit Our Bakery in Person</span>
             </div>
             <h3 className="font-serif font-bold text-2xl text-chocolate-900">
-              Hai Backery - Barrage Center, Bommika
+              Hai Backery - Barrage Center
             </h3>
             <p className="text-xs sm:text-sm text-amber-900/80 max-w-xl">
               {STORE_ADDRESS}

@@ -45,7 +45,7 @@ const PRESET_THEMES: {
       overlay_opacity: 45,
       overlay_color: "chocolate",
       headline: "Welcome to Hai Backery",
-      tagline: "Authentic Pure Ghee Sweets & Custom Designer Cakes • Bommika",
+      tagline: "Authentic Pure Ghee Sweets & Custom Designer Cakes • Barrage Center",
       badge_text: "FRESH BAKERY COUNTER & SWEET STUDIO",
       card_style: "white",
     },
@@ -62,7 +62,7 @@ const PRESET_THEMES: {
       overlay_opacity: 50,
       overlay_color: "amber",
       headline: "Hai Backery Sweets",
-      tagline: "Handcrafted Pure Ghee Sweets, Kaju Katli & Laddus • Bommika",
+      tagline: "Handcrafted Pure Ghee Sweets, Kaju Katli & Laddus • Barrage Center",
       badge_text: "100% PURE DESI GHEE SWEETS",
       card_style: "glass",
     },
@@ -113,8 +113,8 @@ const PRESET_THEMES: {
       overlay_opacity: 0,
       overlay_color: "amber",
       headline: "Welcome to Hai Backery",
-      tagline: "Barrage Center, Bommika, Hiramandalam, Srikakulam – 532459",
-      badge_text: "ESTABLISHED 2024 • BOMMIKA",
+      tagline: "Barrage Center, Hiramandalam, Srikakulam – 532459",
+      badge_text: "ESTABLISHED 2024 • BARRAGE CENTER",
       card_style: "amber",
     },
   },
@@ -430,7 +430,7 @@ export default function AdminLoginThemePage() {
                   type="text"
                   value={formTheme.tagline || ""}
                   onChange={(e) => setFormTheme((prev) => ({ ...prev, tagline: e.target.value }))}
-                  placeholder="e.g. Authentic Pure Ghee Sweets & Custom Designer Cakes • Bommika"
+                  placeholder="e.g. Authentic Pure Ghee Sweets & Custom Designer Cakes • Barrage Center"
                   className="w-full px-3.5 py-2 text-xs rounded-xl border border-amber-200 focus:border-amber-500 focus:outline-none bg-white font-medium text-chocolate-900"
                 />
               </div>
@@ -531,7 +531,7 @@ export default function AdminLoginThemePage() {
                     {formTheme.headline || "Hai Backery"}
                   </h4>
                   <p className="text-[10px] opacity-80 line-clamp-2 leading-relaxed">
-                    {formTheme.tagline || "Authentic Sweets & Custom Designer Cakes • Bommika"}
+                    {formTheme.tagline || "Authentic Sweets & Custom Designer Cakes • Barrage Center"}
                   </p>
                 </div>
 

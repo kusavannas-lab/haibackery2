@@ -77,7 +77,7 @@ export default function CustomCakeSuggestionPage() {
   const [neededTime, setNeededTime] = useState("Morning (9:00 AM - 12:00 PM)");
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
-  const [deliveryPreference, setDeliveryPreference] = useState("Store Pickup (Barrage Center, Bommika)");
+  const [deliveryPreference, setDeliveryPreference] = useState("Store Pickup (Barrage Center)");
   const [specialNotes, setSpecialNotes] = useState("");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -605,8 +605,8 @@ export default function CustomCakeSuggestionPage() {
                       onChange={(e) => setDeliveryPreference(e.target.value)}
                       className="w-full px-3.5 py-2.5 text-xs rounded-xl border-2 border-amber-200 focus:border-amber-500 focus:outline-none bg-white font-semibold text-chocolate-900"
                     >
-                      <option value="Store Pickup (Barrage Center, Bommika)">Self Store Pickup (Barrage Center, Bommika Counter)</option>
-                      <option value="Local Bommika Delivery">Local Delivery in Bommika</option>
+                      <option value="Store Pickup (Barrage Center)">Self Store Pickup (Barrage Center Counter)</option>
+                      <option value="Local Barrage Center Delivery">Local Delivery in Barrage Center</option>
                       <option value="Hiramandalam Town Delivery">Hiramandalam Town Delivery</option>
                     </select>
                   </div>

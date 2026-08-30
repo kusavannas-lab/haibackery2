@@ -107,7 +107,7 @@ export default function Navbar() {
             </a>
             <span className="hidden md:flex items-center gap-1 text-amber-200/70">
               <MapPin className="w-3 h-3 text-amber-400" />
-              <span>Bommika, Hiramandalam</span>
+              <span>Barrage Center, Hiramandalam</span>
             </span>
           </div>
         </div>
@@ -131,7 +131,7 @@ export default function Navbar() {
                 </div>
                 <span className="text-[10px] uppercase tracking-widest text-amber-800 font-semibold flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                  Barrage Center, Bommika
+                  Barrage Center
                 </span>
               </div>
             </Link>

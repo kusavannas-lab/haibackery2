@@ -61,7 +61,7 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
         user_id: null,
         customer_name: customerName.trim(),
         customer_phone: customerPhone.trim(),
-        delivery_address: "Store Pickup - High Bakery, Barrage Center, Bommika",
+        delivery_address: "Store Pickup - Hai Backery, Barrage Center",
         notes: (pickupNotes.trim() ? `${pickupNotes.trim()} • ` : "") + "[Store Pickup • Pay at Counter]",
         total_amount: subtotal,
         profit_amount: totalProfit,
@@ -115,7 +115,7 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                 {orderSuccess ? "Order Confirmed!" : "Store Pickup Booking"}
               </h2>
               <p className="text-[11px] text-amber-300/80">
-                High Bakery • Barrage Center, Bommika
+                Hai Backery • Barrage Center
               </p>
             </div>
           </div>
@@ -141,7 +141,7 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                   Thank You, {orderSuccess.customer_name}!
                 </h3>
                 <p className="text-xs text-amber-800/80">
-                  Your pickup order <strong className="text-bakery-700">#{orderSuccess.id}</strong> has been received by High Bakery.
+                  Your pickup order <strong className="text-bakery-700">#{orderSuccess.id}</strong> has been received by Hai Backery.
                 </p>
               </div>
 
@@ -154,7 +154,7 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                 </div>
                 <div className="text-amber-800">
                   <p className="font-semibold">Pickup Location:</p>
-                  <p className="text-amber-900/90 font-medium">High Bakery, Barrage Center, Bommika, Hiramandalam</p>
+                  <p className="text-amber-900/90 font-medium">Hai Backery, Barrage Center, Hiramandalam</p>
                 </div>
                 <div className="text-amber-800">
                   <p className="font-semibold">Payment:</p>
@@ -212,8 +212,8 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
               <div className="p-3.5 bg-amber-100/70 rounded-2xl border border-amber-300/80 flex items-start gap-2.5">
                 <MapPin className="w-4 h-4 text-bakery-800 shrink-0 mt-0.5" />
                 <div className="text-xs text-amber-900">
-                  <p className="font-bold text-chocolate-900">Store Pickup at High Bakery Counter</p>
-                  <p className="text-[11px] text-amber-800">Barrage Center, Bommika, Hiramandalam, Srikakulam</p>
+                  <p className="font-bold text-chocolate-900">Store Pickup at Hai Backery Counter</p>
+                  <p className="text-[11px] text-amber-800">Barrage Center, Hiramandalam, Srikakulam</p>
                   <p className="text-[10px] text-amber-700/90 mt-0.5 italic">No door delivery • Order is freshly packed & kept ready for collection</p>
                 </div>
               </div>

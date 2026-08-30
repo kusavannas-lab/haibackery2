@@ -45,7 +45,7 @@ export default function Footer() {
             </div>
             
             <p className="text-sm text-amber-200/80 leading-relaxed">
-              Serving handcrafted sweets, hot & crispy biscuits, artisan celebration cakes, and personalized edible photo cakes freshly made every day in Bommika, Hiramandalam.
+              Serving handcrafted sweets, hot & crispy biscuits, artisan celebration cakes, and personalized edible photo cakes freshly made every day in Barrage Center, Hiramandalam.
             </p>
 
             <div className="pt-2 flex items-center gap-2 text-xs text-amber-300/90">
@@ -141,7 +141,7 @@ export default function Footer() {
 
             <div className="space-y-2">
               <a
-                href={`https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent('Hello Shekhar Rao, I would like to place an order at Hai Backery Bommika.')}`}
+                href={`https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent('Hello Shekhar Rao, I would like to place an order at Hai Backery Barrage Center.')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/30 transition transform hover:-translate-y-0.5"
@@ -164,7 +164,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-amber-300/70">
-          <p>© {new Date().getFullYear()} Hai Backery (Shekhar Rao). All rights reserved. Barrage Center, Bommika, Hiramandalam.</p>
+          <p>© {new Date().getFullYear()} Hai Backery (Shekhar Rao). All rights reserved. Barrage Center, Hiramandalam.</p>
           
           <div className="flex items-center gap-4">
             <Link href="/admin/inventory" className="hover:text-amber-200 transition font-medium">

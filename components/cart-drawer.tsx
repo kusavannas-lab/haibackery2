@@ -67,7 +67,7 @@ export default function CartDrawer() {
             <div className="bg-amber-50 px-5 py-2.5 border-b border-amber-100 flex items-center gap-2 text-xs text-chocolate-900">
               <Truck className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>
-                Fresh local delivery in <strong>Bommika & Hiramandalam</strong>
+                Fresh local delivery in <strong>Barrage Center & Hiramandalam</strong>
               </span>
             </div>
 

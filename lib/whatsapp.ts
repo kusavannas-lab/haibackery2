@@ -4,7 +4,7 @@ import { formatCurrency } from "./utils";
 export const ADMIN_PHONE = "919347166241";
 export const ADMIN_NAME = "Shekhar Rao";
 export const STORE_NAME = "Hai Backery";
-export const STORE_ADDRESS = "Barrage Center, Bommika, Hiramandalam, Srikakulam – 532459, Andhra Pradesh";
+export const STORE_ADDRESS = "Barrage Center, Hiramandalam, Srikakulam – 532459, Andhra Pradesh";
 
 /**
  * Helper to build universal WhatsApp link
@@ -33,7 +33,7 @@ export function generateOrderWhatsAppUrl(order: Order): string {
     `📋 *Order ID:* ${order.id}\n` +
     `👤 *Customer Name:* ${order.customer_name}\n` +
     `📞 *Customer Mobile:* ${order.customer_phone}\n` +
-    `📍 *Pickup Location:* Hai Backery, Barrage Center, Bommika\n` +
+    `📍 *Pickup Location:* Hai Backery, Barrage Center\n` +
     `💳 *Payment:* Pay at Counter (Cash / UPI on Pickup)\n` +
     (order.notes ? `📝 *Pickup Time / Notes:* ${order.notes}\n` : "") +
     `----------------------------------------\n` +
@@ -69,14 +69,14 @@ export function generatePhotoCakeWhatsAppUrl(request: PhotoCakeRequest): string 
     (request.message ? `✍️ *Text on Cake:* "${request.message}"\n` : "") +
     `📅 *Pickup Date:* ${request.delivery_date}\n` +
     `⏰ *Pickup Time Slot:* ${request.delivery_time}\n` +
-    `📍 *Pickup Location:* Hai Backery Counter, Barrage Center, Bommika\n` +
+    `📍 *Pickup Location:* Hai Backery Counter, Barrage Center\n` +
     `💳 *Payment:* Pay at Shop Counter on Pickup (Cash / UPI)\n` +
     (request.estimated_price ? `💵 *Estimated Price:* ${formatCurrency(request.estimated_price)}\n` : "") +
     (request.notes ? `📝 *Special Instructions:* ${request.notes}\n` : "") +
     `----------------------------------------\n` +
     photoLine +
     `----------------------------------------\n` +
-    `⚡ _Hai Backery Barrage Center Bommika - Please verify image resolution & baking schedule!_`;
+    `⚡ _Hai Backery Barrage Center - Please verify image resolution & baking schedule!_`;
 
   return buildWhatsAppLink(ADMIN_PHONE, message);
 }
@@ -85,7 +85,7 @@ export function generatePhotoCakeWhatsAppUrl(request: PhotoCakeRequest): string 
  * Generate direct inquiry / customer care link
  */
 export function generateDirectInquiryWhatsAppUrl(customText?: string): string {
-  const defaultText = `Hello Shekhar Rao / Hai Backery team, I have an inquiry regarding fresh sweets, cakes & bakery items from your Bommika shop.`;
+  const defaultText = `Hello Shekhar Rao / Hai Backery team, I have an inquiry regarding fresh sweets, cakes & bakery items from your Barrage Center shop.`;
   const text = customText || defaultText;
   return buildWhatsAppLink(ADMIN_PHONE, text);
 }

@@ -165,7 +165,7 @@ export default function LoginPage() {
               {loginTheme.headline || "Hai Backery"}
             </h1>
             <p className="text-xs opacity-80 max-w-xs mx-auto leading-relaxed">
-              {loginTheme.tagline || "Authentic Sweets & Custom Designer Cakes • Bommika"}
+              {loginTheme.tagline || "Authentic Sweets & Custom Designer Cakes • Barrage Center"}
             </p>
           </div>
         </div>

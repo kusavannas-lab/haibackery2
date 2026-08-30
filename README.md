@@ -1,6 +1,6 @@
-# 🎂 High Bakery - Modern E-Commerce Web Platform
+# 🎂 Hai Backery - Modern E-Commerce Web Platform
 
-A full-stack, responsive bakery web application for **High Bakery**, located at **Barrage Center, Bommika, Hiramandalam, Srikakulam – 532459, Andhra Pradesh, India**.
+A full-stack, responsive bakery web application for **Hai Backery**, located at **Barrage Center, Hiramandalam, Srikakulam – 532459, Andhra Pradesh, India**.
 
 Proprietor & Admin: **Shekhar Rao** (`haibackery@gmail.com` | WhatsApp: `+919347166241`)
 

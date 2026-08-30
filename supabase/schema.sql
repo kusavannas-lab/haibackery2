@@ -1,6 +1,7 @@
 -- ==============================================================================
--- HIGH BAKERY - COMPLETE SUPABASE POSTGRESQL SCHEMA & MULTI-USER SYNC
--- Barrage Center, Bommika, Hiramandalam, Srikakulam – 532459, Andhra Pradesh
+-- HAI BACKERY - SUPABASE POSTGRESQL DATABASE SCHEMA
+-- Barrage Center, Hiramandalam, Srikakulam – 532459, Andhra Pradesh
+-- Proprietor / Admin: Shekhar Rao (haibackery@gmail.com)
 -- ==============================================================================
 
 -- Enable UUID extension
