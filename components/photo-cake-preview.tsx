@@ -99,30 +99,30 @@ export default function PhotoCakePreview({
   // SPECIAL RENDER: Dedicated Realistic Heart Cake Canvas
   if (isHeart) {
     return (
-      <div className="relative w-full max-w-[340px] sm:max-w-md mx-auto aspect-square flex items-center justify-center p-2 sm:p-4 select-none">
+      <div className="relative w-full max-w-[280px] xs:max-w-[320px] sm:max-w-md mx-auto aspect-square flex items-center justify-center p-1 sm:p-4 select-none overflow-hidden">
         {/* Decorative Cake Stand */}
         <div className="absolute inset-x-4 sm:inset-x-6 bottom-1 sm:bottom-2 h-8 sm:h-10 bg-gradient-to-r from-amber-200 via-amber-100 to-amber-300 rounded-full shadow-xl border-2 sm:border-4 border-amber-300/60 -z-10" />
 
         {/* Top Badges */}
-        <div className="absolute top-2 sm:top-4 left-3 sm:left-6 right-3 sm:right-6 flex justify-between items-center z-20 pointer-events-none gap-1">
+        <div className="absolute top-2 sm:top-4 left-2 sm:left-6 right-2 sm:right-6 flex justify-between items-center z-20 pointer-events-none gap-1">
           <div className="flex items-center gap-1 sm:gap-1.5">
-            <span className="bg-white/95 backdrop-blur-md text-chocolate-900 text-[9px] sm:text-[10px] font-extrabold px-2 sm:px-2.5 py-0.5 rounded-full shadow border border-amber-200">
+            <span className="bg-white/95 backdrop-blur-md text-chocolate-900 text-[8px] sm:text-[10px] font-extrabold px-1.5 sm:px-2.5 py-0.5 rounded-full shadow border border-amber-200">
               ⚖️ {weight}
             </span>
-            <span className="bg-rose-100/95 text-rose-950 text-[9px] sm:text-[10px] font-extrabold px-2 sm:px-2 py-0.5 rounded-full shadow border border-rose-300">
+            <span className="bg-rose-100/95 text-rose-950 text-[8px] sm:text-[10px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full shadow border border-rose-300">
               ❤️ Heart
             </span>
           </div>
 
           {eggless && (
-            <span className="bg-white/95 backdrop-blur-md text-emerald-800 text-[9px] sm:text-[10px] font-extrabold px-2 sm:px-2.5 py-0.5 rounded-full shadow flex items-center gap-1 border border-emerald-200">
-              <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-600"></span> 100% Eggless
+            <span className="bg-white/95 backdrop-blur-md text-emerald-800 text-[8px] sm:text-[10px] font-extrabold px-1.5 sm:px-2.5 py-0.5 rounded-full shadow flex items-center gap-1 border border-emerald-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> 100% Eggless
             </span>
           )}
         </div>
 
         {/* Main Heart Cake SVG Canvas */}
-        <svg viewBox="0 0 400 400" className="w-full h-full drop-shadow-2xl overflow-visible">
+        <svg viewBox="0 0 400 400" className="w-full h-full drop-shadow-xl overflow-hidden max-w-full">
           <defs>
             {/* Flavor specific cake gradient */}
             <linearGradient id="heartCakeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -193,10 +193,10 @@ export default function PhotoCakePreview({
         </svg>
 
         {/* Written Message */}
-        <div className="absolute bottom-4 sm:bottom-6 inset-x-4 sm:inset-x-8 text-center z-20">
-          <div className="px-2.5 sm:px-3 py-1 rounded-full backdrop-blur-md bg-black/50 border border-white/20 shadow-md inline-block max-w-full">
+        <div className="absolute bottom-3 sm:bottom-6 inset-x-3 sm:inset-x-8 text-center z-20">
+          <div className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full backdrop-blur-md bg-black/50 border border-white/20 shadow-md inline-block max-w-full">
             <p
-              className="font-serif italic font-bold text-[11px] sm:text-xs md:text-sm tracking-wide truncate"
+              className="font-serif italic font-bold text-[10px] sm:text-xs md:text-sm tracking-wide truncate"
               style={{ color: style.defaultMsgColor }}
             >
               {message ? `"${message}"` : "✍️ Your Custom Cake Message Here"}
@@ -205,7 +205,7 @@ export default function PhotoCakePreview({
         </div>
 
         {/* Flavor Badge */}
-        <div className="absolute bottom-0 sm:bottom-1 bg-white/95 text-chocolate-900 text-[9px] sm:text-[10px] font-bold px-2.5 sm:px-3 py-0.5 rounded-full shadow border border-amber-100 z-30">
+        <div className="absolute bottom-0 sm:bottom-1 bg-white/95 text-chocolate-900 text-[8px] sm:text-[10px] font-bold px-2 sm:px-3 py-0.5 rounded-full shadow border border-amber-100 z-30">
           🍰 {flavor}
         </div>
       </div>
@@ -217,7 +217,7 @@ export default function PhotoCakePreview({
   const innerPhotoRounded = isSquare ? "rounded-2xl" : "rounded-full";
 
   return (
-    <div className="relative w-full max-w-[340px] sm:max-w-md mx-auto aspect-square flex items-center justify-center p-2 sm:p-4 select-none">
+    <div className="relative w-full max-w-[280px] xs:max-w-[320px] sm:max-w-md mx-auto aspect-square flex items-center justify-center p-1 sm:p-4 select-none overflow-hidden">
       {/* Decorative Cake Stand */}
       <div
         className={`absolute inset-x-4 sm:inset-x-6 bottom-1 sm:bottom-2 h-8 sm:h-10 bg-gradient-to-r from-amber-200 via-amber-100 to-amber-300 ${isSquare ? "rounded-2xl" : "rounded-full"} shadow-xl border-2 sm:border-4 border-amber-300/60 -z-10`}

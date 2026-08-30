@@ -296,10 +296,10 @@ export default function PhotoCakePage() {
   })();
 
   return (
-    <div className="min-h-screen py-6 sm:py-10 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
+    <div className="min-h-screen py-4 sm:py-10 px-2.5 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-4 sm:space-y-8 w-full max-w-full overflow-x-hidden">
       
       {/* Top Breadcrumb & Responsive Header */}
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3 w-full">
         <Link
           href="/"
           className="inline-flex items-center gap-1.5 text-xs font-bold text-bakery-700 hover:text-bakery-900 transition"
@@ -309,31 +309,36 @@ export default function PhotoCakePage() {
         </Link>
 
         {isPhotoCakeEnabled && (
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-            <div className="space-y-1">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-bakery-800 text-[11px] font-bold">
-                <Sparkles className="w-3.5 h-3.5 text-bakery-600" />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 w-full">
+            <div className="space-y-1 min-w-0">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 text-bakery-800 text-[10px] sm:text-[11px] font-bold">
+                <Sparkles className="w-3 h-3 text-bakery-600" />
                 <span>Hai Backery Custom Cake Studio</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-extrabold text-chocolate-900 leading-tight">
+              <h1 className="text-xl sm:text-3xl lg:text-4xl font-serif font-extrabold text-chocolate-900 leading-tight">
                 Personalized Photo Cake Designer 🎂
               </h1>
-              <p className="text-xs sm:text-sm text-amber-900/75 max-w-2xl">
+              <p className="text-[11px] sm:text-sm text-amber-900/75 max-w-2xl">
                 High-definition edible sugar sheet photo printing on fresh bakery cakes in Barrage Center, Hiramandalam.
               </p>
             </div>
 
             {/* Estimated Price Badge */}
-            <div className="bg-amber-50 border-2 border-amber-200/90 p-3 sm:p-4 rounded-2xl flex items-center gap-3 shrink-0 shadow-xs">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-bakery-700 shrink-0">
-                <Cake className="w-5 h-5" />
+            <div className="bg-amber-50 border border-amber-200 p-2.5 sm:p-4 rounded-2xl flex items-center justify-between sm:justify-start gap-3 shrink-0 shadow-xs w-full sm:w-auto">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-bakery-700 shrink-0">
+                  <Cake className="w-4 h-4 sm:w-5 sm:h-5" />
+                </div>
+                <div>
+                  <p className="text-[9px] sm:text-xs text-amber-800 font-semibold uppercase tracking-wider">Estimated Price</p>
+                  <p className="text-base sm:text-2xl font-extrabold text-chocolate-900">
+                    {formatCurrency(calculatedPrice)}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-[10px] sm:text-xs text-amber-800 font-semibold uppercase tracking-wider">Estimated Price</p>
-                <p className="text-lg sm:text-2xl font-extrabold text-chocolate-900">
-                  {formatCurrency(calculatedPrice)}
-                </p>
-              </div>
+              <span className="text-[10px] text-bakery-800 bg-amber-100 px-2 py-0.5 rounded-full font-bold border border-amber-300 sm:hidden">
+                Edible Print & Box
+              </span>
             </div>
           </div>
         )}

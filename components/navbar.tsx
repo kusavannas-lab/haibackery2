@@ -84,53 +84,51 @@ export default function Navbar() {
   return (
     <>
       {/* Top Banner Notice */}
-      <div className="bg-gradient-to-r from-chocolate-800 via-bakery-900 to-chocolate-800 text-amber-100 text-xs py-1.5 px-4">
-        <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full text-[11px] font-semibold border border-amber-500/30">
-              <Sparkles className="w-3 h-3 text-amber-400" /> Fresh Daily
+      <div className="bg-gradient-to-r from-chocolate-800 via-bakery-900 to-chocolate-800 text-amber-100 text-xs py-1 px-2 sm:px-4 w-full overflow-hidden">
+        <div className="max-w-7xl mx-auto flex justify-between items-center gap-2 text-[10px] sm:text-xs">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="inline-flex items-center gap-1 bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full text-[9px] sm:text-[11px] font-semibold border border-amber-500/30 shrink-0">
+              <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-400" /> Fresh Daily
             </span>
-            <span className="hidden sm:inline text-amber-200/90 font-medium">
+            <span className="hidden sm:inline text-amber-200/90 font-medium truncate">
               Authentic Sweets, Hot Bakery & Custom Photo Cakes
             </span>
           </div>
 
-          <div className="flex items-center gap-4 text-[11px]">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0 text-[10px] sm:text-[11px]">
             <a
               href={`https://wa.me/${ADMIN_PHONE}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1 hover:text-white transition font-medium"
             >
-              <Phone className="w-3 h-3 text-emerald-400" />
-              <span>Order on WhatsApp: +91 9347166241</span>
+              <Phone className="w-3 h-3 text-emerald-400 shrink-0" />
+              <span>+91 9347166241</span>
             </a>
             <span className="hidden md:flex items-center gap-1 text-amber-200/70">
-              <MapPin className="w-3 h-3 text-amber-400" />
-              <span>Barrage Center, Hiramandalam</span>
+              <MapPin className="w-3 h-3 text-amber-400 shrink-0" />
+              <span>Barrage Center</span>
             </span>
           </div>
         </div>
       </div>
 
       {/* Main Header */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-amber-100 shadow-sm transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20 gap-4">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-amber-100 shadow-sm transition-all w-full overflow-hidden">
+        <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 sm:h-20 gap-2 sm:gap-4">
             
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-3 group shrink-0">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 via-bakery-600 to-amber-700 flex items-center justify-center text-white shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform duration-200">
-                <Cake className="w-7 h-7 text-white" />
+            <Link href="/" className="flex items-center gap-2 sm:gap-3 group shrink-0 min-w-0">
+              <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-amber-500 via-bakery-600 to-amber-700 flex items-center justify-center text-white shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform duration-200 shrink-0">
+                <Cake className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
               </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-2xl font-bold tracking-tight text-chocolate-900 font-serif">
-                    Hai <span className="text-bakery-600">Backery</span>
-                  </span>
-                </div>
-                <span className="text-[10px] uppercase tracking-widest text-amber-800 font-semibold flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <div className="flex flex-col min-w-0">
+                <span className="text-base sm:text-2xl font-bold tracking-tight text-chocolate-900 font-serif leading-tight truncate">
+                  Hai <span className="text-bakery-600">Backery</span>
+                </span>
+                <span className="text-[8px] sm:text-[10px] uppercase tracking-wider text-amber-800 font-bold flex items-center gap-1 leading-tight">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
                   Barrage Center
                 </span>
               </div>
@@ -199,7 +197,7 @@ export default function Navbar() {
             </div>
 
             {/* Navigation & Action Buttons */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
               
               {/* Custom Cake Idea Suggestion Link */}
               <Link
@@ -234,10 +232,10 @@ export default function Navbar() {
               {isAdmin && (
                 <Link
                   href="/admin/executive"
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-amber-100 to-amber-200 text-bakery-950 hover:from-amber-200 hover:to-amber-300 transition text-xs font-bold border border-amber-300 shadow-sm"
+                  className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-amber-100 to-amber-200 text-bakery-950 hover:from-amber-200 hover:to-amber-300 transition text-[11px] sm:text-xs font-bold border border-amber-300 shadow-sm"
                   title="Executive Admin Dashboard"
                 >
-                  <Sparkles className="w-4 h-4 text-bakery-700 animate-spin-slow" />
+                  <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-bakery-700 animate-spin-slow" />
                   <span className="hidden sm:inline">⚡ Executive Control</span>
                 </Link>
               )}
@@ -246,9 +244,9 @@ export default function Navbar() {
               <div ref={dropdownRef} className="relative">
                 <button
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-xl border border-amber-200 bg-amber-50/50 hover:bg-amber-100/70 text-chocolate-900 transition text-xs font-medium"
+                  className="flex items-center gap-1.5 px-2 py-1.5 sm:px-3 sm:py-2 rounded-xl border border-amber-200 bg-amber-50/50 hover:bg-amber-100/70 text-chocolate-900 transition text-xs font-medium"
                 >
-                  <div className="w-6 h-6 rounded-full bg-amber-200 flex items-center justify-center text-bakery-800 font-bold text-xs">
+                  <div className="w-6 h-6 rounded-full bg-amber-200 flex items-center justify-center text-bakery-800 font-bold text-xs shrink-0">
                     {user.isLoggedIn ? user.name.charAt(0).toUpperCase() : <User className="w-3.5 h-3.5" />}
                   </div>
                   <span className="hidden xl:inline max-w-[100px] truncate">
