@@ -457,7 +457,7 @@ export default function HomePage() {
             </h2>
 
             <p className="text-xs sm:text-sm text-amber-200/90 leading-relaxed">
-              Get authentic pure ghee sweets, snack gift boxes, celebration cakes, and crispy savories in large quantities with <strong>up to 20% bulk discounts</strong>. Delivered directly to your event venue across Bommika & Hiramandalam.
+              Get authentic pure ghee sweets, snack gift boxes, celebration cakes, and crispy savories in large quantities at transparent, fixed rates per KG. Delivered directly to your event venue across Bommika & Hiramandalam.
             </p>
 
             <div className="pt-2 flex flex-wrap items-center gap-4">
@@ -482,8 +482,8 @@ export default function HomePage() {
           </div>
 
           <div className="bg-[#2c1207] p-6 rounded-3xl border-2 border-amber-600/50 shadow-xl space-y-2 shrink-0 text-center relative z-10">
-            <p className="text-xs font-black text-amber-400 uppercase tracking-widest">Grand Event Discount</p>
-            <p className="text-3xl font-black text-white">Up to 20% OFF</p>
+            <p className="text-xs font-black text-amber-400 uppercase tracking-widest">100% Pure Desi Ghee</p>
+            <p className="text-3xl font-black text-white">Fresh Baking</p>
             <p className="text-[11px] text-amber-200/70">Custom Gift Box Packaging Available</p>
           </div>
         </div>

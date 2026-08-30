@@ -225,18 +225,7 @@ export default function BulkOrdersPage() {
     0
   );
 
-  // Automatic Bulk Discount Tiers
-  let discountPercent = 0;
-  if (totalKgs >= 25 || subtotal >= 10000) {
-    discountPercent = 20;
-  } else if (totalKgs >= 15 || subtotal >= 6000) {
-    discountPercent = 15;
-  } else if (totalKgs >= 5 || subtotal >= 2500) {
-    discountPercent = 10;
-  }
-
-  const discountAmount = Math.round((subtotal * discountPercent) / 100);
-  const estimatedTotal = subtotal - discountAmount;
+  const estimatedTotal = subtotal;
 
   // Build WhatsApp Inquiry Link
   const buildWhatsAppOrderLink = (orderData: any) => {
@@ -271,9 +260,7 @@ export default function BulkOrdersPage() {
       `${orderListText}\n` +
       `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
       `⚖️ *Total Order Weight:* ${orderData.totalKgs} kg\n` +
-      `📊 *Subtotal:* ${formatCurrency(orderData.subtotal)}\n` +
-      `🎉 *Bulk Event Discount (${orderData.discountPercent}%):* -${formatCurrency(orderData.discountAmount)}\n` +
-      `💰 *Total Payable:* ${formatCurrency(orderData.estimatedTotal)}\n` +
+      `💰 *Total Amount:* ${formatCurrency(orderData.estimatedTotal)}\n` +
       `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
       `_Namaste Shekhar Rao garu, please confirm availability and delivery slot for our event._`;
 
@@ -314,8 +301,6 @@ export default function BulkOrdersPage() {
       items: sweetItems,
       totalKgs,
       subtotal,
-      discountPercent,
-      discountAmount,
       estimatedTotal,
       createdAt: new Date().toISOString(),
     };
@@ -371,7 +356,7 @@ export default function BulkOrdersPage() {
             </h1>
 
             <p className="text-xs sm:text-sm text-amber-200/90 leading-relaxed">
-              Select your favorite sweets and choose how many kilograms (kg) you need. All sweet rates are <strong>fixed and guaranteed by Hai Backery Admin (Shekhar Rao)</strong> with automatic bulk event discounts up to <strong>20% OFF</strong>.
+              Select your favorite sweets and choose how many kilograms (kg) you need. All sweet rates are <strong>fixed and guaranteed by Hai Backery Admin (Shekhar Rao)</strong> with 100% pure desi ghee and fresh daily preparation.
             </p>
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -388,12 +373,12 @@ export default function BulkOrdersPage() {
 
           <div className="bg-[#2c1207] p-6 rounded-3xl border-2 border-amber-600/50 shadow-xl space-y-4 shrink-0 relative z-10 text-center">
             <div className="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300 mx-auto">
-              <Percent className="w-7 h-7" />
+              <ShieldCheck className="w-7 h-7" />
             </div>
             <div>
-              <p className="text-xs font-black text-amber-300 uppercase tracking-widest">Automatic Bulk Discounts</p>
-              <p className="text-2xl font-black text-white mt-1">Up to 20% OFF</p>
-              <p className="text-[11px] text-amber-200/70 mt-0.5">5 kg+ (10%) • 15 kg+ (15%) • 25 kg+ (20%)</p>
+              <p className="text-xs font-black text-amber-300 uppercase tracking-widest">100% Pure Desi Ghee</p>
+              <p className="text-2xl font-black text-white mt-1">Guaranteed Quality</p>
+              <p className="text-[11px] text-amber-200/70 mt-0.5">Direct Counter Pricing • Fresh Daily Preparation</p>
             </div>
 
             <a
@@ -424,7 +409,7 @@ export default function BulkOrdersPage() {
                 Bulk Order Summary Prepared!
               </h2>
               <p className="text-xs sm:text-sm text-amber-800/90 max-w-md mx-auto">
-                Your bulk order specifications and discount calculations are ready for <strong>Shekhar Rao at Hai Backery</strong>.
+                Your bulk order specifications and total pricing are ready for <strong>Shekhar Rao at Hai Backery</strong>.
               </p>
             </div>
 
@@ -969,23 +954,8 @@ export default function BulkOrdersPage() {
                     <span className="font-extrabold text-amber-300">{totalKgs} kg</span>
                   </div>
 
-                  <div className="flex justify-between text-amber-200">
-                    <span>Gross Subtotal:</span>
-                    <span className="font-bold">{formatCurrency(subtotal)}</span>
-                  </div>
-
-                  {discountPercent > 0 && (
-                    <div className="flex justify-between text-emerald-400 font-bold bg-emerald-950/40 p-2 rounded-xl border border-emerald-500/30">
-                      <span className="flex items-center gap-1">
-                        <Percent className="w-3.5 h-3.5" />
-                        Bulk Discount ({discountPercent}%):
-                      </span>
-                      <span>-{formatCurrency(discountAmount)}</span>
-                    </div>
-                  )}
-
                   <div className="flex justify-between text-base font-black text-amber-300 pt-2 border-t border-amber-800/60">
-                    <span>Estimated Total:</span>
+                    <span>Total Amount:</span>
                     <span className="text-xl">{formatCurrency(estimatedTotal)}</span>
                   </div>
                 </div>
