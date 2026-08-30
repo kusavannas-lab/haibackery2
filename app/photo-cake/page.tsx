@@ -429,7 +429,7 @@ export default function PhotoCakePage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
           
           {/* Left Column: Live Interactive Cake Canvas (Sticky on Laptop/Desktop) */}
-          <div className="lg:col-span-5 lg:sticky lg:top-24 space-y-4">
+          <div className="lg:col-span-5 lg:sticky lg:top-24 space-y-4" id="live-cake-canvas">
             <div className="bg-white rounded-3xl p-4 sm:p-6 border-2 border-amber-200/90 shadow-lg text-center space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-amber-100">
                 <span className="text-xs font-bold text-chocolate-900 flex items-center gap-1.5">
@@ -481,6 +481,33 @@ export default function PhotoCakePage() {
                   <span className="font-bold">📐 Sugar Sheet Dimensions:</span>
                   <span>Max 8.27 × 11.69 inches (A4 size) or below (custom fitted to cake)</span>
                 </div>
+
+                {/* Inline Confirmation when photo is loaded */}
+                {photoUrl && (
+                  <div className="flex items-center gap-3 p-2.5 rounded-2xl bg-amber-100/70 border-2 border-amber-300">
+                    <img src={photoUrl} alt="Loaded Photo" className="w-12 h-12 rounded-xl object-cover border border-amber-400 shrink-0 shadow-sm" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-black text-chocolate-900 flex items-center gap-1">
+                        <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
+                        <span>Photo Applied to Live Cake!</span>
+                      </p>
+                      <p className="text-[10px] text-amber-800 truncate">
+                        Edible sugar sheet is previewed on your cake above.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const el = document.getElementById("live-cake-canvas");
+                        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+                      }}
+                      className="px-2.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-[10px] shrink-0 flex items-center gap-1 shadow-sm"
+                    >
+                      <Eye className="w-3 h-3" />
+                      <span>View Cake</span>
+                    </button>
+                  </div>
+                )}
 
                 <div className="space-y-3">
                   <input
@@ -854,35 +881,53 @@ export default function PhotoCakePage() {
 
       {/* Floating Bottom Action for Mobile (Hidden on Desktop) */}
       {isPhotoCakeEnabled && !submittedRequest && (
-        <div className="lg:hidden fixed bottom-3 inset-x-3 z-40 bg-white/95 backdrop-blur-md p-3 rounded-2xl border-2 border-amber-300 shadow-2xl flex items-center justify-between gap-3 animate-in slide-in-from-bottom-5">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-10 h-10 rounded-xl overflow-hidden bg-amber-100 shrink-0 border border-amber-300">
+        <div className="lg:hidden fixed bottom-3 inset-x-3 z-40 bg-white/95 backdrop-blur-md p-2.5 rounded-2xl border-2 border-amber-300 shadow-2xl flex items-center justify-between gap-2 animate-in slide-in-from-bottom-5">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-9 h-9 rounded-xl overflow-hidden bg-amber-100 shrink-0 border border-amber-300">
               {photoUrl ? (
                 <img src={photoUrl} alt="Cake Photo" className="w-full h-full object-cover" />
               ) : (
-                <Cake className="w-full h-full p-2 text-amber-700" />
+                <Cake className="w-full h-full p-1.5 text-amber-700" />
               )}
             </div>
             <div className="truncate">
-              <p className="text-[11px] font-black text-chocolate-900 truncate">
+              <p className="text-[10px] font-black text-chocolate-900 truncate">
                 {selectedShape} • {selectedWeight}
               </p>
-              <p className="text-xs font-extrabold text-amber-600">
+              <p className="text-xs font-black text-amber-600 leading-tight">
                 {formatCurrency(calculatedPrice)}
               </p>
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-            }}
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-extrabold text-xs shadow-md shrink-0 flex items-center gap-1.5"
-          >
-            <span>Proceed</span>
-            <ChevronDown className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                const el = document.getElementById("live-cake-canvas");
+                if (el) {
+                  el.scrollIntoView({ behavior: "smooth", block: "center" });
+                } else {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+              }}
+              className="px-2.5 py-2 rounded-xl bg-amber-100 hover:bg-amber-200 text-chocolate-950 font-bold text-[10px] border border-amber-300 flex items-center gap-1 shadow-xs"
+            >
+              <Eye className="w-3 h-3 text-bakery-700" />
+              <span>Preview</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+              }}
+              className="px-3 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-extrabold text-[10px] shadow-md flex items-center gap-1"
+            >
+              <span>Book</span>
+              <ChevronDown className="w-3 h-3" />
+            </button>
+          </div>
         </div>
       )}
 
