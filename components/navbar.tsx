@@ -440,7 +440,7 @@ export default function Navbar() {
                 onClick={() => setMobileMenuOpen(false)}
                 className="col-span-2 flex items-center justify-center gap-2 p-3 bg-amber-100 hover:bg-amber-200 text-chocolate-900 font-extrabold text-sm rounded-xl border border-amber-300 shadow-sm"
               >
-                <span>🎉 Bulk & Event Orders (Up to 20% OFF)</span>
+                <span>🎉 Bulk & Event Orders (Party & Marriage)</span>
               </Link>
 
               <Link

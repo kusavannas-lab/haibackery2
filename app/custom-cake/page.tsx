@@ -285,8 +285,8 @@ export default function CustomCakeSuggestionPage() {
                       </a>
                     )}
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-36 h-36 rounded-2xl overflow-hidden border-2 border-amber-300 shadow-md shrink-0">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                    <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl overflow-hidden border-2 border-amber-300 shadow-md shrink-0">
                       <img
                         src={submittedSuggestion.image_url}
                         alt="Uploaded Cake Reference"

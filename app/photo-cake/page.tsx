@@ -17,7 +17,12 @@ import {
   ArrowLeft,
   Heart,
   Check,
-  MessageCircle
+  MessageCircle,
+  Image as ImageIcon,
+  RefreshCw,
+  Eye,
+  Sliders,
+  ChevronDown
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import PhotoCakePreview from "@/components/photo-cake-preview";
@@ -51,6 +56,29 @@ const TIME_SLOTS = [
   "04:00 PM - 06:00 PM",
   "06:00 PM - 08:00 PM",
   "08:00 PM - 10:00 PM",
+];
+
+const SAMPLE_PHOTOS = [
+  {
+    name: "Celebration",
+    url: "https://images.unsplash.com/photo-1535141192574-5d4897c13136?auto=format&fit=crop&w=800&q=80",
+    label: "🎂 Birthday",
+  },
+  {
+    name: "Romance",
+    url: "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=800&q=80",
+    label: "❤️ Romance",
+  },
+  {
+    name: "Baby Party",
+    url: "https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=800&q=80",
+    label: "👶 Kids",
+  },
+  {
+    name: "Golden Jubilee",
+    url: "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&w=800&q=80",
+    label: "✨ Jubilee",
+  },
 ];
 
 export default function PhotoCakePage() {
@@ -133,6 +161,43 @@ export default function PhotoCakePage() {
     currentFlavorObj.pricePerKg * currentWeightObj.multiplier + printCharge + (currentShapeObj.extraPrice || 0)
   );
 
+  // Client-side image compression for fast mobile uploads
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (readerEvent) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 1200;
+          let width = img.width;
+          let height = img.height;
+          if (width > height && width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else if (height > maxDim) {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            resolve(readerEvent.target?.result as string);
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+          resolve(dataUrl);
+        };
+        img.onerror = () => resolve(readerEvent.target?.result as string);
+        img.src = readerEvent.target?.result as string;
+      };
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(file);
+    });
+  };
+
   // Handle Image Upload (Supabase storage or Local data URL)
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -141,9 +206,13 @@ export default function PhotoCakePage() {
     setIsUploading(true);
 
     try {
-      // If Supabase configured, upload to cake-photos bucket
+      // 1. Instantly compress and generate local preview
+      const compressedDataUrl = await compressImage(file);
+      setPhotoUrl(compressedDataUrl);
+
+      // 2. If Supabase configured, upload in background
       if (isSupabaseConfigured() && supabase) {
-        const fileExt = file.name.split(".").pop();
+        const fileExt = file.name.split(".").pop() || "jpg";
         const fileName = `cake-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
         const filePath = `${fileName}`;
 
@@ -155,23 +224,12 @@ export default function PhotoCakePage() {
           const { data } = supabase.storage.from("cake-photos").getPublicUrl(filePath);
           if (data?.publicUrl) {
             setPhotoUrl(data.publicUrl);
-            setIsUploading(false);
-            return;
           }
         }
       }
-
-      // Fallback: Read as Data URL for instant live preview
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (reader.result) {
-          setPhotoUrl(reader.result as string);
-        }
-        setIsUploading(false);
-      };
-      reader.readAsDataURL(file);
     } catch (err) {
-      console.error("Image upload failed:", err);
+      console.error("Image upload fallback error:", err);
+    } finally {
       setIsUploading(false);
     }
   };
@@ -231,41 +289,48 @@ export default function PhotoCakePage() {
     }
   };
 
+  const tomorrowDateString = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split("T")[0];
+  })();
+
   return (
-    <div className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen py-6 sm:py-10 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
       
-      {/* Top Breadcrumb & Header */}
+      {/* Top Breadcrumb & Responsive Header */}
       <div className="space-y-3">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-xs font-bold text-bakery-700 hover:text-bakery-900 transition"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-bakery-700 hover:text-bakery-900 transition"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Storefront</span>
         </Link>
 
         {isPhotoCakeEnabled && (
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-bakery-800 text-xs font-bold mb-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-bakery-800 text-[11px] font-bold">
                 <Sparkles className="w-3.5 h-3.5 text-bakery-600" />
-                <span>Hai Backery Custom Studio</span>
+                <span>Hai Backery Custom Cake Studio</span>
               </div>
-              <h1 className="text-3xl sm:text-4xl font-serif font-extrabold text-chocolate-900">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-extrabold text-chocolate-900 leading-tight">
                 Personalized Photo Cake Designer 🎂
               </h1>
-              <p className="text-xs sm:text-sm text-amber-900/70">
-                High-resolution edible photo printing on fresh bakery cakes in Barrage Center, Hiramandalam.
+              <p className="text-xs sm:text-sm text-amber-900/75 max-w-2xl">
+                High-definition edible sugar sheet photo printing on fresh bakery cakes in Barrage Center, Hiramandalam.
               </p>
             </div>
 
-            <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-bakery-700">
+            {/* Estimated Price Badge */}
+            <div className="bg-amber-50 border-2 border-amber-200/90 p-3 sm:p-4 rounded-2xl flex items-center gap-3 shrink-0 shadow-xs">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-bakery-700 shrink-0">
                 <Cake className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-xs text-amber-800 font-medium">Estimated Price</p>
-                <p className="text-xl font-extrabold text-chocolate-900">
+                <p className="text-[10px] sm:text-xs text-amber-800 font-semibold uppercase tracking-wider">Estimated Price</p>
+                <p className="text-lg sm:text-2xl font-extrabold text-chocolate-900">
                   {formatCurrency(calculatedPrice)}
                 </p>
               </div>
@@ -276,22 +341,22 @@ export default function PhotoCakePage() {
 
       {!isPhotoCakeEnabled ? (
         /* Only Show "Now it is not available" View When Disabled by Admin */
-        <div className="bg-gradient-to-r from-rose-500/15 via-amber-500/15 to-rose-500/15 border-2 border-rose-300 rounded-3xl p-8 sm:p-14 text-center space-y-4 shadow-md max-w-3xl mx-auto my-8 animate-in zoom-in-95 duration-300">
+        <div className="bg-gradient-to-r from-rose-500/15 via-amber-500/15 to-rose-500/15 border-2 border-rose-300 rounded-3xl p-6 sm:p-12 text-center space-y-4 shadow-md max-w-3xl mx-auto my-6 animate-in zoom-in-95 duration-300">
           <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-rose-100 text-rose-950 text-xs font-black border border-rose-300">
-            <span>🔴 Now it is not available</span>
+            <span>🔴 Currently Unavailable Online</span>
           </div>
-          <h2 className="font-serif font-black text-3xl sm:text-4xl text-chocolate-900">
-            Photo Cake: Now it is not available
+          <h2 className="font-serif font-black text-2xl sm:text-4xl text-chocolate-900">
+            Photo Cake: Now it is not available online
           </h2>
           <p className="text-xs sm:text-sm text-chocolate-900 max-w-xl mx-auto leading-relaxed font-medium">
-            Photo cake online ordering is currently disabled by Hai Backery. Please contact Shekhar Rao directly on WhatsApp for offline inquiries and future bookings!
+            Photo cake online ordering is currently disabled. Please contact Shekhar Rao directly on WhatsApp for offline inquiries and custom bookings!
           </p>
-          <div className="pt-3">
+          <div className="pt-2">
             <a
               href={`https://wa.me/919347166241?text=${encodeURIComponent("Hello Shekhar Rao, I see photo cakes are now not available online. I would like to inquire about custom photo cake availability.")}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 transition transform hover:scale-105"
+              className="inline-flex items-center gap-2 px-6 sm:px-8 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 transition transform hover:scale-105"
             >
               <MessageCircle className="w-4 h-4" />
               <span>Chat with Shekhar Rao on WhatsApp (+91 9347166241)</span>
@@ -300,13 +365,13 @@ export default function PhotoCakePage() {
         </div>
       ) : submittedRequest ? (
         /* Order Success View */
-        <div className="bg-white rounded-3xl p-8 sm:p-12 border border-amber-200 shadow-xl text-center max-w-2xl mx-auto space-y-6 animate-in zoom-in-95 duration-300">
-          <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto text-emerald-600 shadow-xl shadow-emerald-500/20">
-            <CheckCircle2 className="w-12 h-12" />
+        <div className="bg-white rounded-3xl p-6 sm:p-12 border border-amber-200 shadow-xl text-center max-w-2xl mx-auto space-y-6 animate-in zoom-in-95 duration-300">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto text-emerald-600 shadow-xl shadow-emerald-500/20">
+            <CheckCircle2 className="w-10 h-10 sm:w-12 sm:h-12" />
           </div>
 
-          <div className="space-y-2">
-            <h2 className="font-serif font-bold text-2xl text-chocolate-900">
+          <div className="space-y-1.5">
+            <h2 className="font-serif font-bold text-xl sm:text-2xl text-chocolate-900">
               Photo Cake Request Received!
             </h2>
             <p className="text-xs sm:text-sm text-amber-800/80">
@@ -314,7 +379,7 @@ export default function PhotoCakePage() {
             </p>
           </div>
 
-          <div className="bg-amber-50/80 p-5 rounded-2xl border border-amber-200 text-left space-y-3 text-xs">
+          <div className="bg-amber-50/80 p-4 sm:p-5 rounded-2xl border border-amber-200 text-left space-y-2.5 text-xs">
             <div className="flex justify-between border-b border-amber-200 pb-2">
               <span className="font-semibold text-amber-900">Request ID:</span>
               <span className="font-bold text-bakery-700">{submittedRequest.id}</span>
@@ -340,7 +405,7 @@ export default function PhotoCakePage() {
               href={generatePhotoCakeWhatsAppUrl(submittedRequest)}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full py-4 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 transition transform hover:scale-102"
+              className="w-full py-4 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 transition transform hover:scale-102"
             >
               <Send className="w-4 h-4" />
               <span>Send Details to WhatsApp (+91 9347166241)</span>
@@ -356,22 +421,22 @@ export default function PhotoCakePage() {
         </div>
       ) : (
         /* Designer Form & Live Preview Grid */
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
           
-          {/* Left Column: Live Interactive Cake Canvas */}
-          <div className="lg:col-span-5 sticky top-28 space-y-4">
-            <div className="bg-white rounded-3xl p-6 border border-amber-200/80 shadow-lg text-center space-y-4">
+          {/* Left Column: Live Interactive Cake Canvas (Sticky on Laptop/Desktop) */}
+          <div className="lg:col-span-5 lg:sticky lg:top-24 space-y-4">
+            <div className="bg-white rounded-3xl p-4 sm:p-6 border-2 border-amber-200/90 shadow-lg text-center space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-amber-100">
                 <span className="text-xs font-bold text-chocolate-900 flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                  Live Cake Preview
+                  Live 3D Cake Canvas
                 </span>
-                <span className="text-[10px] bg-amber-100 text-bakery-900 font-bold px-2 py-0.5 rounded-full">
-                  Interactive
+                <span className="text-[10px] bg-amber-100 text-bakery-900 font-bold px-2 py-0.5 rounded-full border border-amber-200">
+                  Real-time Preview
                 </span>
               </div>
 
-              {/* Real-time Cake Preview */}
+              {/* Real-time Cake Preview Component */}
               <PhotoCakePreview
                 flavor={selectedFlavor}
                 weight={selectedWeight}
@@ -381,37 +446,38 @@ export default function PhotoCakePage() {
                 message={cakeMessage}
               />
 
-              <div className="bg-amber-50/80 rounded-2xl p-3 border border-amber-200 text-left space-y-1">
-                <div className="flex items-center gap-1.5 text-xs font-black text-chocolate-900">
+              {/* Specification Card */}
+              <div className="bg-amber-50/90 rounded-2xl p-3 sm:p-3.5 border border-amber-200 text-left space-y-1">
+                <div className="flex items-center justify-between text-xs font-black text-chocolate-900">
                   <span>📄 Print Size Spec:</span>
-                  <span className="text-amber-900 font-bold">Max 8.27 × 11.69 in (A4) or below</span>
+                  <span className="text-amber-900 font-bold text-[11px]">Max 8.27 × 11.69 in (A4)</span>
                 </div>
                 <p className="text-[11px] text-amber-800/80 leading-relaxed">
-                  💡 Printed on 100% FDA-approved edible sugar sheet with food-grade inks. Scaled proportionally to fit your selected cake size (0.5kg – 5kg).
+                  💡 Printed on 100% FDA-approved edible sugar sheet with food-grade inks. Scaled proportionally to fit your selected cake size ({selectedWeight}, {selectedShape} shape).
                 </p>
               </div>
             </div>
           </div>
 
           {/* Right Column: Customization Controls & Booking Form */}
-          <div className="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 border border-amber-200/80 shadow-lg space-y-6">
+          <div className="lg:col-span-7 bg-white rounded-3xl p-4 sm:p-8 border-2 border-amber-200/90 shadow-lg space-y-6">
             <form onSubmit={handleSubmit} className="space-y-6">
               
               {/* Step 1: Upload Photo */}
               <div className="space-y-3 pb-6 border-b border-amber-100">
-                <h2 className="font-serif font-bold text-base text-chocolate-900 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs flex items-center justify-center font-sans font-bold">
+                <h2 className="font-serif font-bold text-sm sm:text-base text-chocolate-900 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs flex items-center justify-center font-sans font-bold shrink-0">
                     1
                   </span>
-                  Upload Your High-Resolution Photo
+                  Upload Your Photo (Edible Sugar Sheet Print)
                 </h2>
 
                 <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-900 font-medium">
                   <span className="font-bold">📐 Sugar Sheet Dimensions:</span>
-                  <span>Occupies 8.27 × 11.69 inches (A4 size) or below (custom fitted to cake)</span>
+                  <span>Max 8.27 × 11.69 inches (A4 size) or below (custom fitted to cake)</span>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center gap-4">
+                <div className="space-y-3">
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -420,32 +486,64 @@ export default function PhotoCakePage() {
                     className="hidden"
                   />
 
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
-                    className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-amber-50 hover:bg-amber-100 text-bakery-900 border-2 border-dashed border-amber-300 font-bold text-xs flex items-center justify-center gap-2 transition"
-                  >
-                    <Upload className="w-4 h-4 text-bakery-600" />
-                    <span>{isUploading ? "Processing Image..." : "Choose Photo from Device"}</span>
-                  </button>
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploading}
+                      className="flex-1 py-3 px-4 rounded-2xl bg-amber-50 hover:bg-amber-100 text-bakery-900 border-2 border-dashed border-amber-400 font-bold text-xs flex items-center justify-center gap-2 transition active:scale-98"
+                    >
+                      <Upload className="w-4 h-4 text-bakery-600 shrink-0" />
+                      <span>{isUploading ? "Optimizing & Uploading..." : "Choose Photo from Phone / PC"}</span>
+                    </button>
 
-                  <span className="text-xs text-amber-800/70">
-                    Supports JPG, PNG, WEBP (Max 15MB)
-                  </span>
+                    {photoUrl && (
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="px-3 py-3 rounded-2xl bg-white hover:bg-amber-50 text-chocolate-900 border border-amber-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5 text-amber-600" />
+                        <span>Change</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Sample Photo Templates for Instant 1-Click Preview */}
+                  <div>
+                    <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider block mb-1.5">
+                      Or Try Sample Templates:
+                    </span>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {SAMPLE_PHOTOS.map((sample) => (
+                        <button
+                          key={sample.name}
+                          type="button"
+                          onClick={() => setPhotoUrl(sample.url)}
+                          className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-bold transition flex items-center justify-center gap-1 truncate ${
+                            photoUrl === sample.url
+                              ? "bg-amber-200 border-amber-600 text-chocolate-950 font-black shadow-xs"
+                              : "bg-amber-50/60 border-amber-200 text-chocolate-800 hover:bg-amber-100"
+                          }`}
+                        >
+                          <span>{sample.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
 
               {/* Step 2: Select Cake Flavor */}
               <div className="space-y-3 pb-6 border-b border-amber-100">
-                <h2 className="font-serif font-bold text-base text-chocolate-900 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs flex items-center justify-center font-sans font-bold">
+                <h2 className="font-serif font-bold text-sm sm:text-base text-chocolate-900 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs flex items-center justify-center font-sans font-bold shrink-0">
                     2
                   </span>
                   Choose Cake Flavor
                 </h2>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5">
                   {availableFlavors.map((f) => {
                     const isSelected = selectedFlavor === f.name;
                     return (
@@ -453,16 +551,21 @@ export default function PhotoCakePage() {
                         key={f.name}
                         type="button"
                         onClick={() => setSelectedFlavor(f.name)}
-                        className={`p-3 rounded-2xl border text-left transition ${
+                        className={`p-2.5 sm:p-3 rounded-2xl border-2 text-left transition relative ${
                           isSelected
-                            ? "bg-amber-100 border-bakery-600 ring-2 ring-bakery-500/20 shadow-sm"
+                            ? "bg-amber-100/80 border-bakery-600 ring-2 ring-bakery-500/20 shadow-sm"
                             : "bg-white border-amber-200 hover:bg-amber-50/60"
                         }`}
                       >
-                        <p className="text-xs font-bold text-chocolate-900 leading-tight">
+                        {isSelected && (
+                          <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-bakery-600 text-white flex items-center justify-center">
+                            <Check className="w-2.5 h-2.5 stroke-[3]" />
+                          </div>
+                        )}
+                        <p className="text-xs font-bold text-chocolate-900 leading-tight pr-4">
                           {f.name}
                         </p>
-                        <p className="text-[10px] text-bakery-700 font-semibold mt-1">
+                        <p className="text-[10px] text-bakery-700 font-bold mt-1">
                           {formatCurrency(f.pricePerKg)}/kg
                         </p>
                       </button>
@@ -473,14 +576,14 @@ export default function PhotoCakePage() {
 
               {/* Step 3: Select Cake Shape (Square / Round / Heart) */}
               <div className="space-y-3 pb-6 border-b border-amber-100">
-                <h2 className="font-serif font-bold text-base text-chocolate-900 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs flex items-center justify-center font-sans font-bold">
+                <h2 className="font-serif font-bold text-sm sm:text-base text-chocolate-900 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs flex items-center justify-center font-sans font-bold shrink-0">
                     3
                   </span>
                   Choose Cake Shape
                 </h2>
 
-                <div className="grid grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
                   {availableShapes.map((s) => {
                     const isSelected = selectedShape === s.name;
                     return (
@@ -488,21 +591,21 @@ export default function PhotoCakePage() {
                         key={s.name}
                         type="button"
                         onClick={() => setSelectedShape(s.name)}
-                        className={`p-3 rounded-2xl border text-center transition ${
+                        className={`p-2.5 sm:p-3 rounded-2xl border-2 text-center transition ${
                           isSelected
-                            ? "bg-amber-100 border-bakery-600 ring-2 ring-bakery-500/20 shadow-sm"
+                            ? "bg-amber-100/80 border-bakery-600 ring-2 ring-bakery-500/20 shadow-sm"
                             : "bg-white border-amber-200 hover:bg-amber-50/60"
                         }`}
                       >
-                        <p className="text-xs font-bold text-chocolate-900 leading-tight">
+                        <p className="text-xs font-bold text-chocolate-900 leading-tight truncate">
                           {s.label || s.name}
                         </p>
                         {s.extraPrice > 0 ? (
-                          <p className="text-[10px] text-amber-800 font-semibold mt-1">
+                          <p className="text-[10px] text-amber-800 font-bold mt-1">
                             +{formatCurrency(s.extraPrice)}
                           </p>
                         ) : (
-                          <p className="text-[10px] text-emerald-700 font-semibold mt-1">
+                          <p className="text-[10px] text-emerald-700 font-bold mt-1">
                             Standard
                           </p>
                         )}
@@ -514,8 +617,8 @@ export default function PhotoCakePage() {
 
               {/* Step 4: Select Weight & Dietary Preference */}
               <div className="space-y-3 pb-6 border-b border-amber-100">
-                <h2 className="font-serif font-bold text-base text-chocolate-900 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs flex items-center justify-center font-sans font-bold">
+                <h2 className="font-serif font-bold text-sm sm:text-base text-chocolate-900 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs flex items-center justify-center font-sans font-bold shrink-0">
                     4
                   </span>
                   Cake Weight & Eggless Option
@@ -531,7 +634,7 @@ export default function PhotoCakePage() {
                         onClick={() => setSelectedWeight(w.value)}
                         className={`p-2.5 rounded-xl border text-xs font-bold text-center transition ${
                           isSelected
-                            ? "bg-chocolate-900 text-white border-chocolate-900 shadow-sm"
+                            ? "bg-chocolate-900 text-white border-chocolate-900 shadow-sm font-black"
                             : "bg-white text-chocolate-900 border-amber-200 hover:bg-amber-50"
                         }`}
                       >
@@ -541,17 +644,21 @@ export default function PhotoCakePage() {
                   })}
                 </div>
 
-                <div className="pt-2 flex items-center justify-between bg-amber-50/80 p-3 rounded-2xl border border-amber-200">
+                {/* Eggless Toggle */}
+                <div className="pt-2 flex items-center justify-between bg-amber-50/90 p-3 sm:p-3.5 rounded-2xl border border-amber-200">
                   <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-emerald-600 inline-block"></span>
-                    <span className="text-xs font-bold text-chocolate-900">
-                      100% Eggless Bakery Sponge
-                    </span>
+                    <span className="w-3 h-3 rounded-full bg-emerald-600 inline-block shrink-0"></span>
+                    <div>
+                      <span className="text-xs font-bold text-chocolate-900 block">
+                        100% Pure Eggless Bakery Sponge
+                      </span>
+                      <span className="text-[10px] text-amber-800/80">Baked in clean pure vegetarian counter</span>
+                    </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => setIsEggless(!isEggless)}
-                    className={`w-12 h-6 rounded-full p-1 transition-colors ${
+                    className={`w-12 h-6 rounded-full p-1 transition-colors shrink-0 ${
                       isEggless ? "bg-emerald-600" : "bg-gray-300"
                     }`}
                   >
@@ -566,8 +673,8 @@ export default function PhotoCakePage() {
 
               {/* Step 5: Message on Cake */}
               <div className="space-y-3 pb-6 border-b border-amber-100">
-                <h2 className="font-serif font-bold text-base text-chocolate-900 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs flex items-center justify-center font-sans font-bold">
+                <h2 className="font-serif font-bold text-sm sm:text-base text-chocolate-900 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs flex items-center justify-center font-sans font-bold shrink-0">
                     5
                   </span>
                   Message to be Written on Cake
@@ -579,18 +686,18 @@ export default function PhotoCakePage() {
                   placeholder="e.g. Happy 1st Birthday Aarav! ❤️"
                   value={cakeMessage}
                   onChange={(e) => setCakeMessage(e.target.value)}
-                  className="w-full px-4 py-3 text-xs sm:text-sm rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-bakery-500/30 focus:border-bakery-500 font-medium text-chocolate-900"
+                  className="w-full px-3.5 py-2.5 sm:py-3 text-xs sm:text-sm rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-bakery-500/30 focus:border-bakery-500 font-bold text-chocolate-900 bg-white"
                 />
-                <div className="flex justify-between text-[11px] text-amber-800/70">
-                  <span>Renders live on the cake above</span>
+                <div className="flex justify-between text-[10px] sm:text-[11px] text-amber-800/75">
+                  <span>Renders live on the cake above in real-time</span>
                   <span>{cakeMessage.length}/45 chars</span>
                 </div>
               </div>
 
               {/* Step 6: Schedule & Customer Contact */}
               <div className="space-y-4">
-                <h2 className="font-serif font-bold text-base text-chocolate-900 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs flex items-center justify-center font-sans font-bold">
+                <h2 className="font-serif font-bold text-sm sm:text-base text-chocolate-900 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-amber-500 text-white text-xs flex items-center justify-center font-sans font-bold shrink-0">
                     6
                   </span>
                   Store Pickup Schedule & Contact Information
@@ -602,7 +709,7 @@ export default function PhotoCakePage() {
                   <span>Hai Backery, Barrage Center • Pay at Counter on Pickup</span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
                     <label className="block text-xs font-bold text-chocolate-900 mb-1 flex items-center gap-1.5">
                       <User className="w-3.5 h-3.5 text-bakery-600" />
@@ -614,7 +721,7 @@ export default function PhotoCakePage() {
                       placeholder="e.g. Shekhar Rao / Sneha"
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-bakery-500/30"
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-bakery-500/30 font-medium text-chocolate-900 bg-white"
                     />
                   </div>
 
@@ -629,7 +736,7 @@ export default function PhotoCakePage() {
                       placeholder="e.g. +91 93471 66241"
                       value={customerPhone}
                       onChange={(e) => setCustomerPhone(e.target.value)}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-bakery-500/30"
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-bakery-500/30 font-medium text-chocolate-900 bg-white"
                     />
                   </div>
 
@@ -641,9 +748,10 @@ export default function PhotoCakePage() {
                     <input
                       type="date"
                       required
+                      min={tomorrowDateString}
                       value={deliveryDate}
                       onChange={(e) => setDeliveryDate(e.target.value)}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-bakery-500/30"
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-bakery-500/30 font-medium text-chocolate-900 bg-white"
                     />
                   </div>
 
@@ -655,7 +763,7 @@ export default function PhotoCakePage() {
                     <select
                       value={deliveryTime}
                       onChange={(e) => setDeliveryTime(e.target.value)}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-bakery-500/30 bg-white"
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-bakery-500/30 bg-white font-medium text-chocolate-900"
                     >
                       {activeTimeSlots.map((slot) => (
                         <option key={slot} value={slot}>
@@ -676,22 +784,22 @@ export default function PhotoCakePage() {
                     placeholder="e.g. Please add extra chocolate curls around the border, delivering to Barrage Center"
                     value={specialNotes}
                     onChange={(e) => setSpecialNotes(e.target.value)}
-                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-bakery-500/30 resize-none"
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-bakery-500/30 resize-none font-medium text-chocolate-900 bg-white"
                   />
                 </div>
               </div>
 
               {/* Submit Action */}
               <div className="pt-4 border-t border-amber-100 space-y-3">
-                <div className="flex justify-between items-center bg-amber-50 p-4 rounded-2xl border border-amber-200">
+                <div className="flex justify-between items-center bg-amber-50/90 p-3.5 sm:p-4 rounded-2xl border border-amber-200">
                   <div>
-                    <span className="text-xs text-amber-800 block">Total Estimated Price</span>
-                    <span className="text-2xl font-extrabold text-chocolate-900">
+                    <span className="text-[10px] sm:text-xs text-amber-800 block uppercase font-semibold">Total Estimated Price</span>
+                    <span className="text-xl sm:text-2xl font-extrabold text-chocolate-900">
                       {formatCurrency(calculatedPrice)}
                     </span>
                   </div>
 
-                  <span className="text-[11px] text-bakery-800 bg-amber-100 px-3 py-1 rounded-full font-bold border border-amber-300">
+                  <span className="text-[10px] sm:text-[11px] text-bakery-800 bg-amber-100 px-3 py-1 rounded-full font-bold border border-amber-300">
                     Includes Edible Print & Box
                   </span>
                 </div>
@@ -701,13 +809,13 @@ export default function PhotoCakePage() {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-bakery-600 to-amber-600 hover:from-amber-600 hover:to-bakery-700 text-white font-extrabold text-sm flex items-center justify-center gap-2.5 shadow-xl shadow-amber-500/25 transition transform hover:scale-102 active:scale-98 disabled:opacity-50"
+                      className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-bakery-600 to-amber-600 hover:from-amber-600 hover:to-bakery-700 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2.5 shadow-xl shadow-amber-500/25 transition transform hover:scale-[1.01] active:scale-98 disabled:opacity-50"
                     >
                       <Send className="w-4 h-4" />
                       <span>{isSubmitting ? "Submitting Custom Cake..." : "Submit Photo Cake & Send to WhatsApp"}</span>
                     </button>
 
-                    <p className="text-[11px] text-center text-amber-800/80">
+                    <p className="text-[10px] sm:text-[11px] text-center text-amber-800/80">
                       ⚡ Auto-saves record to database & opens WhatsApp to Shekhar Rao (+91 9347166241)
                     </p>
                   </>
@@ -736,6 +844,40 @@ export default function PhotoCakePage() {
             </form>
           </div>
 
+        </div>
+      )}
+
+      {/* Floating Bottom Action for Mobile (Hidden on Desktop) */}
+      {isPhotoCakeEnabled && !submittedRequest && (
+        <div className="lg:hidden fixed bottom-3 inset-x-3 z-40 bg-white/95 backdrop-blur-md p-3 rounded-2xl border-2 border-amber-300 shadow-2xl flex items-center justify-between gap-3 animate-in slide-in-from-bottom-5">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-10 h-10 rounded-xl overflow-hidden bg-amber-100 shrink-0 border border-amber-300">
+              {photoUrl ? (
+                <img src={photoUrl} alt="Cake Photo" className="w-full h-full object-cover" />
+              ) : (
+                <Cake className="w-full h-full p-2 text-amber-700" />
+              )}
+            </div>
+            <div className="truncate">
+              <p className="text-[11px] font-black text-chocolate-900 truncate">
+                {selectedShape} • {selectedWeight}
+              </p>
+              <p className="text-xs font-extrabold text-amber-600">
+                {formatCurrency(calculatedPrice)}
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+            }}
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-extrabold text-xs shadow-md shrink-0 flex items-center gap-1.5"
+          >
+            <span>Proceed</span>
+            <ChevronDown className="w-3.5 h-3.5" />
+          </button>
         </div>
       )}
 
