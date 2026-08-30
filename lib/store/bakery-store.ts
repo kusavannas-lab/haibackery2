@@ -536,6 +536,22 @@ export function useBakeryStore() {
             return prev;
           });
         }
+
+        // 5. Sync Bulk Catalog (Real-time updates to customer bulk orders page)
+        const { data: latestBulk } = await sb
+          .from("bulk_catalog")
+          .select("*")
+          .order("name");
+        if (latestBulk !== null && latestBulk !== undefined && latestBulk.length > 0) {
+          setBulkCatalog((prev) => {
+            if (JSON.stringify(prev) !== JSON.stringify(latestBulk)) {
+              localStorage.setItem(STORAGE_KEYS.BULK_CATALOG, JSON.stringify(latestBulk));
+              notifyUpdate();
+              return latestBulk as BulkCatalogItem[];
+            }
+            return prev;
+          });
+        }
       } catch {
         // silent background sync catch
       }
@@ -947,7 +963,7 @@ export function useBakeryStore() {
     const newItem: BulkCatalogItem = {
       id: `bulk-cat-${generateShortId()}`,
       name: name.trim(),
-      rate_per_kg: Math.max(0, rate_per_kg),
+      rate_per_kg: Math.max(0, Number(rate_per_kg) || 0),
       is_available: true,
       unit: unit.trim() || "kg",
       description: description?.trim() || "",
@@ -956,7 +972,8 @@ export function useBakeryStore() {
 
     if (isSupabaseConfigured() && supabase) {
       try {
-        await supabase.from("bulk_catalog").insert([newItem]);
+        const { error } = await supabase.from("bulk_catalog").insert([newItem]);
+        if (error) console.error("Supabase insert bulk item error:", error);
       } catch (err) {
         console.error("Supabase insert bulk item error:", err);
       }
@@ -964,15 +981,28 @@ export function useBakeryStore() {
 
     const updated = [newItem, ...bulkCatalog];
     setBulkCatalog(updated);
-    localStorage.setItem(STORAGE_KEYS.BULK_CATALOG, JSON.stringify(updated));
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEYS.BULK_CATALOG, JSON.stringify(updated));
+    }
     notifyUpdate();
     return newItem;
   };
 
   const updateBulkItem = async (id: string, updates: Partial<BulkCatalogItem>) => {
+    const original = bulkCatalog.find((item) => item.id === id);
+    const updatedPayload = {
+      ...(original || {}),
+      ...updates,
+      id,
+      name: updates.name !== undefined ? updates.name.trim() : original?.name || "",
+      rate_per_kg: updates.rate_per_kg !== undefined ? Math.max(0, Number(updates.rate_per_kg) || 0) : original?.rate_per_kg || 0,
+      is_available: updates.is_available !== undefined ? updates.is_available : (original?.is_available !== false),
+    };
+
     if (isSupabaseConfigured() && supabase) {
       try {
-        await supabase.from("bulk_catalog").update(updates).eq("id", id);
+        const { error } = await supabase.from("bulk_catalog").upsert([updatedPayload]);
+        if (error) console.error("Supabase update/upsert bulk item error:", error);
       } catch (err) {
         console.error("Supabase update bulk item error:", err);
       }
@@ -986,14 +1016,17 @@ export function useBakeryStore() {
     });
 
     setBulkCatalog(updated);
-    localStorage.setItem(STORAGE_KEYS.BULK_CATALOG, JSON.stringify(updated));
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEYS.BULK_CATALOG, JSON.stringify(updated));
+    }
     notifyUpdate();
   };
 
   const deleteBulkItem = async (id: string) => {
     if (isSupabaseConfigured() && supabase) {
       try {
-        await supabase.from("bulk_catalog").delete().eq("id", id);
+        const { error } = await supabase.from("bulk_catalog").delete().eq("id", id);
+        if (error) console.error("Supabase delete bulk item error:", error);
       } catch (err) {
         console.error("Supabase delete bulk item error:", err);
       }
@@ -1001,7 +1034,9 @@ export function useBakeryStore() {
 
     const updated = bulkCatalog.filter((item) => item.id !== id);
     setBulkCatalog(updated);
-    localStorage.setItem(STORAGE_KEYS.BULK_CATALOG, JSON.stringify(updated));
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEYS.BULK_CATALOG, JSON.stringify(updated));
+    }
     notifyUpdate();
   };
 
@@ -1012,7 +1047,8 @@ export function useBakeryStore() {
 
     if (isSupabaseConfigured() && supabase) {
       try {
-        await supabase.from("bulk_catalog").update({ is_available: nextAvailability }).eq("id", id);
+        const { error } = await supabase.from("bulk_catalog").update({ is_available: nextAvailability }).eq("id", id);
+        if (error) console.error("Supabase toggle bulk item error:", error);
       } catch (err) {
         console.error("Supabase toggle bulk item error:", err);
       }
@@ -1026,7 +1062,9 @@ export function useBakeryStore() {
     });
 
     setBulkCatalog(updated);
-    localStorage.setItem(STORAGE_KEYS.BULK_CATALOG, JSON.stringify(updated));
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEYS.BULK_CATALOG, JSON.stringify(updated));
+    }
     notifyUpdate();
   };
 

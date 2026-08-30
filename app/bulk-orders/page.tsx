@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { 
   Sparkles, 
@@ -89,6 +89,45 @@ export default function BulkOrdersPage() {
         ratePerKg: it.ratePerKg,
         productId: it.name,
       }));
+
+  // Real-time synchronization: When Admin updates bulk catalog items or rates in Admin Console,
+  // immediately update the customer sweet items with the latest rates and names
+  useEffect(() => {
+    if (allAvailableSweets.length > 0) {
+      setSweetItems((prev) => {
+        if (!prev || prev.length === 0) {
+          return allAvailableSweets.slice(0, 3).map((s, idx) => ({
+            id: `item-${idx + 1}`,
+            sweetName: s.name,
+            quantityKgs: idx === 0 ? 5 : idx === 1 ? 10 : 5,
+            fixedRatePerKg: s.ratePerKg,
+            productId: s.productId,
+          }));
+        }
+
+        return prev.map((item) => {
+          const matched = allAvailableSweets.find(
+            (s) => s.name.toLowerCase().trim() === item.sweetName.toLowerCase().trim() || s.productId === item.productId
+          );
+          if (matched) {
+            return {
+              ...item,
+              sweetName: matched.name,
+              fixedRatePerKg: matched.ratePerKg,
+              productId: matched.productId,
+            };
+          }
+          const fallback = allAvailableSweets[0];
+          return {
+            ...item,
+            sweetName: fallback.name,
+            fixedRatePerKg: fallback.ratePerKg,
+            productId: fallback.productId,
+          };
+        });
+      });
+    }
+  }, [bulkCatalog]);
 
   // Add new sweet row
   const handleAddSweetRow = () => {
@@ -715,6 +754,45 @@ _Namaste Shekhar Rao garu, please confirm availability and delivery slot for our
             </div>
           </div>
 
+        </div>
+
+        {/* 3. Full Bulk Catalog Rate Card (Live from Bakery Counter) */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border-2 border-amber-200/90 shadow-md space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-amber-100">
+            <div className="space-y-1">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-bakery-900 text-xs font-bold">
+                <Sparkles className="w-3.5 h-3.5 text-bakery-600" />
+                Live Bakery Price Board
+              </span>
+              <h3 className="font-serif font-black text-xl text-chocolate-900">
+                Official Bulk Sweet & KG Rate Card
+              </h3>
+              <p className="text-xs text-amber-800/80">
+                Prices and availability managed by Shekhar Rao at Barrage Center, Bommika.
+              </p>
+            </div>
+            <span className="text-xs font-black text-amber-900 bg-amber-50 px-3.5 py-1.5 rounded-xl border border-amber-300 w-fit">
+              {allAvailableSweets.length} Items Available
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {allAvailableSweets.map((sweet) => (
+              <div
+                key={sweet.productId || sweet.name}
+                className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/80 flex items-center justify-between hover:bg-amber-100/60 transition"
+              >
+                <div className="space-y-0.5 pr-2">
+                  <p className="text-xs font-extrabold text-chocolate-900">{sweet.name}</p>
+                  <p className="text-[10px] text-amber-700">Fresh Pure Ghee Batch</p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-sm font-black text-chocolate-900">{formatCurrency(sweet.ratePerKg)}</p>
+                  <p className="text-[10px] text-amber-800 font-bold">per kg</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
       </div>
