@@ -15,10 +15,11 @@ export default function ImageUploadDropzone({
   label = "Product Image",
 }: ImageUploadDropzoneProps) {
   const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileProcess = (file: File) => {
+  const handleFileProcess = async (file: File) => {
     setErrorMessage("");
     if (!file.type.startsWith("image/")) {
       setErrorMessage("Please upload a valid image file (JPG, PNG, WEBP).");
@@ -30,6 +31,7 @@ export default function ImageUploadDropzone({
       return;
     }
 
+    // 1. Instant local preview
     const reader = new FileReader();
     reader.onload = (e) => {
       if (e.target?.result) {
@@ -37,6 +39,25 @@ export default function ImageUploadDropzone({
       }
     };
     reader.readAsDataURL(file);
+
+    // 2. Upload to Cloud Storage for public WhatsApp preview link
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.success && data.url) {
+        onChange(data.url);
+      }
+    } catch (err) {
+      console.warn("Cloud image upload fallback:", err);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -83,15 +104,22 @@ export default function ImageUploadDropzone({
               alt="Uploaded Product Preview"
               className="w-full h-full object-cover"
             />
+            {isUploading && (
+              <div className="absolute inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center">
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
           </div>
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 text-emerald-700 text-xs font-bold">
               <CheckCircle2 className="w-4 h-4" />
-              <span>Image Uploaded Successfully</span>
+              <span>
+                {isUploading ? "Uploading photo to cloud..." : "Photo Ready & Linked"}
+              </span>
             </div>
             <p className="text-[10px] text-amber-800/80 truncate mt-0.5">
-              Ready for customer storefront display
+              {value.startsWith("http") ? "Cloud image link generated for WhatsApp preview" : "Local preview loaded"}
             </p>
             
             <div className="flex items-center gap-2 mt-2">

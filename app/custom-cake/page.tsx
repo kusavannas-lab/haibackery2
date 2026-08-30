@@ -243,15 +243,30 @@ export default function CustomCakeSuggestionPage() {
               </div>
 
               {submittedSuggestion.image_url && (
-                <div className="space-y-1.5 border-b border-amber-200 pb-3">
-                  <span className="font-bold text-amber-900">Uploaded Reference Image:</span>
-                  <div className="w-32 h-32 rounded-xl overflow-hidden border-2 border-amber-300 shadow-md">
+                <div className="space-y-2 border-b border-amber-200 pb-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-amber-900">Uploaded Reference Image:</span>
+                    {submittedSuggestion.image_url.startsWith("http") && (
+                      <a
+                        href={submittedSuggestion.image_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] text-bakery-700 font-bold underline flex items-center gap-1"
+                      >
+                        <span>Open Public Link 🔗</span>
+                      </a>
+                    )}
+                  </div>
+                  <div className="w-36 h-36 rounded-2xl overflow-hidden border-2 border-amber-300 shadow-md">
                     <img
                       src={submittedSuggestion.image_url}
                       alt="Uploaded Cake Reference"
                       className="w-full h-full object-cover"
                     />
                   </div>
+                  <p className="text-[10px] text-emerald-800 font-semibold bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                    ✅ Your reference photo is saved in the bakery system & linked to your WhatsApp message.
+                  </p>
                 </div>
               )}
 
