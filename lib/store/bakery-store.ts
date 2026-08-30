@@ -1,7 +1,17 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Category, Product, Order, PhotoCakeRequest, OrderStatus, PhotoCakeStatus, CustomerCakeSuggestion, CakeSuggestionStatus } from "../types";
+import { 
+  Category, 
+  Product, 
+  Order, 
+  PhotoCakeRequest, 
+  OrderStatus, 
+  PhotoCakeStatus, 
+  CustomerCakeSuggestion, 
+  CakeSuggestionStatus,
+  LoginThemeConfig 
+} from "../types";
 import { INITIAL_CATEGORIES, INITIAL_PRODUCTS, INITIAL_ORDERS, INITIAL_PHOTO_CAKES } from "./seed-data";
 import { isSupabaseConfigured, supabase } from "../supabase/client";
 import { generateShortId } from "../utils";
@@ -16,6 +26,19 @@ const STORAGE_KEYS = {
   PHOTO_CAKE_CONFIG: "hb_photo_cake_config_v2",
   PHOTO_CAKE_ENABLED: "hb_photo_cake_enabled_v2",
   CAKE_SUGGESTIONS: "hb_cake_suggestions_v2",
+  LOGIN_THEME: "hb_login_theme_v2",
+};
+
+export const INITIAL_LOGIN_THEME: LoginThemeConfig = {
+  background_type: 'image',
+  background_image_url: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1600&auto=format&fit=crop&q=80",
+  background_blur: "none",
+  overlay_opacity: 45,
+  overlay_color: "chocolate",
+  headline: "Welcome to Hai Backery",
+  tagline: "Authentic Pure Ghee Sweets & Custom Designer Cakes • Bommika",
+  badge_text: "FRESH BAKERY COUNTER & SWEET STUDIO",
+  card_style: "white",
 };
 
 export interface PhotoCakeFlavor {
@@ -206,6 +229,15 @@ export function useBakeryStore() {
       } catch {}
     }
     return [];
+  });
+  const [loginTheme, setLoginTheme] = useState<LoginThemeConfig>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const local = localStorage.getItem(STORAGE_KEYS.LOGIN_THEME);
+        if (local) return { ...INITIAL_LOGIN_THEME, ...JSON.parse(local) };
+      } catch {}
+    }
+    return INITIAL_LOGIN_THEME;
   });
   const [user, setUser] = useState<UserSession>({
     email: "",
@@ -1573,6 +1605,20 @@ export function useBakeryStore() {
     }
   };
 
+  const updateLoginTheme = async (themeUpdates: Partial<LoginThemeConfig>) => {
+    const updated: LoginThemeConfig = {
+      ...loginTheme,
+      ...themeUpdates,
+      updated_at: new Date().toISOString(),
+    };
+    setLoginTheme(updated);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEYS.LOGIN_THEME, JSON.stringify(updated));
+    }
+    notifyUpdate();
+    return updated;
+  };
+
   return {
     categories,
     visibleCategories,
@@ -1583,6 +1629,7 @@ export function useBakeryStore() {
     orders,
     photoCakes,
     cakeSuggestions,
+    loginTheme,
     user,
     isLoading,
     isAdmin: user.role === "admin" || user.email.toLowerCase() === "haibackery@gmail.com",
@@ -1590,6 +1637,7 @@ export function useBakeryStore() {
     loginWithGoogle,
     loginWithEmail,
     logout,
+    updateLoginTheme,
     clearAllDemoData,
     addProduct,
     updateProduct,

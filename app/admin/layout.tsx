@@ -105,6 +105,16 @@ export default function AdminLayout({
       ],
     },
     {
+      groupTitle: "BRANDING & CUSTOMIZATION",
+      items: [
+        {
+          name: "Login Page & Background",
+          href: "/admin/login-theme",
+          icon: Palette,
+        },
+      ],
+    },
+    {
       groupTitle: "FINANCIALS & REPORTS",
       items: [
         {

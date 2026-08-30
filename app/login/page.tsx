@@ -21,7 +21,7 @@ import { ADMIN_PHONE } from "@/lib/whatsapp";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user, isAdmin, loginWithEmail, loginWithGoogle } = useBakeryStore();
+  const { user, isAdmin, loginWithEmail, loginWithGoogle, loginTheme } = useBakeryStore();
 
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -90,50 +90,84 @@ export default function LoginPage() {
     window.location.assign(`${rootUrl}?${qs.toString()}`);
   };
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim()) {
-      setErrorMsg("Please enter your email address.");
-      return;
-    }
-
-    setIsSubmitting(true);
-    setErrorMsg("");
-    setSuccessMsg("");
-
-    try {
-      const result = await loginWithEmail(email.trim(), name.trim());
-      if (result.success) {
-        setSuccessMsg(result.message);
-        setTimeout(() => {
-          if (result.isAdmin) {
-            router.push("/admin/executive");
-          } else {
-            router.push("/");
-          }
-        }, 800);
-      }
-    } catch (err) {
-      setErrorMsg("Failed to sign in. Please try again.");
-    } finally {
-      setIsSubmitting(false);
+  // Theme Overlay Color
+  const getOverlayColor = () => {
+    const opacity = (loginTheme.overlay_opacity ?? 45) / 100;
+    switch (loginTheme.overlay_color) {
+      case "black":
+        return `rgba(0, 0, 0, ${opacity})`;
+      case "amber":
+        return `rgba(66, 32, 6, ${opacity})`;
+      case "velvet":
+        return `rgba(45, 10, 20, ${opacity})`;
+      case "chocolate":
+      default:
+        return `rgba(34, 13, 5, ${opacity})`;
     }
   };
 
+  // Card Class by theme
+  const getCardClasses = () => {
+    switch (loginTheme.card_style) {
+      case "glass":
+        return "bg-white/90 backdrop-blur-md border-2 border-white/60 text-chocolate-900 shadow-2xl";
+      case "dark":
+        return "bg-[#1f0c05]/95 backdrop-blur-md border-2 border-amber-500/50 text-amber-50 shadow-2xl";
+      case "amber":
+        return "bg-amber-50/95 border-2 border-amber-300 text-chocolate-900 shadow-2xl";
+      case "white":
+      default:
+        return "bg-white border-2 border-amber-200/90 text-chocolate-900 shadow-2xl";
+    }
+  };
+
+  // Blur Class
+  const getBlurClass = () => {
+    switch (loginTheme.background_blur) {
+      case "sm": return "backdrop-blur-xs";
+      case "md": return "backdrop-blur-sm";
+      case "lg": return "backdrop-blur-md";
+      case "none":
+      default: return "";
+    }
+  };
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center px-4 py-12 bg-gradient-to-b from-amber-100/40 via-white to-amber-50">
-      <div className="w-full max-w-md bg-white rounded-3xl p-8 border border-amber-200/80 shadow-2xl space-y-6 animate-in zoom-in-95 duration-200">
+    <div 
+      className="min-h-screen relative flex items-center justify-center px-4 py-16 bg-cover bg-center bg-no-repeat transition-all duration-500"
+      style={{
+        backgroundImage: loginTheme.background_image_url 
+          ? `url('${loginTheme.background_image_url}')` 
+          : "linear-gradient(to bottom right, #fcf4e8, #fdebd0, #f8d7da)",
+      }}
+    >
+      {/* Background Dark Overlay */}
+      <div 
+        className={`absolute inset-0 transition-all duration-500 ${getBlurClass()}`}
+        style={{ backgroundColor: getOverlayColor() }}
+      />
+
+      <div className={`w-full max-w-md rounded-3xl p-8 sm:p-10 relative z-10 space-y-6 animate-in zoom-in-95 duration-300 ${getCardClasses()}`}>
         
         {/* Brand Header */}
         <div className="text-center space-y-3">
-          <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-amber-500 via-bakery-600 to-amber-700 flex items-center justify-center text-white mx-auto shadow-lg shadow-amber-500/25">
+          <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-amber-500 via-bakery-600 to-amber-700 flex items-center justify-center text-white mx-auto shadow-xl shadow-amber-500/25">
             <Cake className="w-9 h-9" />
           </div>
 
-          <h1 className="font-serif font-black text-3xl text-chocolate-900 tracking-tight">
-            Hai <span className="text-amber-600">Backery</span>
-          </h1>
+          <div className="space-y-1">
+            {loginTheme.badge_text && (
+              <span className="inline-block text-[10px] font-black tracking-widest uppercase px-3 py-1 rounded-full bg-amber-500/20 text-amber-600 border border-amber-500/30">
+                {loginTheme.badge_text}
+              </span>
+            )}
+            <h1 className="font-serif font-black text-3xl tracking-tight">
+              {loginTheme.headline || "Hai Backery"}
+            </h1>
+            <p className="text-xs opacity-80 max-w-xs mx-auto leading-relaxed">
+              {loginTheme.tagline || "Authentic Sweets & Custom Designer Cakes • Bommika"}
+            </p>
+          </div>
         </div>
 
         {/* Status Alerts */}
@@ -179,6 +213,20 @@ export default function LoginPage() {
             </svg>
             <span>{isSubmitting ? "Connecting to Google..." : "Sign in with Google"}</span>
           </button>
+
+          <p className="text-[11px] text-center opacity-70 font-medium pt-1">
+            Store Admin: Sign in with <strong>haibackery@gmail.com</strong>
+          </p>
+        </div>
+
+        {/* Footer info */}
+        <div className="pt-2 border-t border-amber-200/40 text-center">
+          <Link
+            href="/"
+            className="text-xs font-bold text-amber-700 hover:text-amber-900 underline"
+          >
+            ← Back to Storefront
+          </Link>
         </div>
 
       </div>

@@ -22,7 +22,8 @@ import {
   Layers, 
   Cake,
   Edit3,
-  X
+  X,
+  Palette
 } from "lucide-react";
 import { useBakeryStore } from "@/lib/store/bakery-store";
 import { Product } from "@/lib/types";
@@ -202,6 +203,14 @@ export default function ExecutiveAdminPage() {
             <Trash2 className="w-3.5 h-3.5" />
             <span>Clear All Data</span>
           </button>
+
+          <Link
+            href="/admin/login-theme"
+            className="px-4 py-3.5 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-black text-xs flex items-center gap-1.5 border border-amber-500/40 shadow transition"
+          >
+            <Palette className="w-4 h-4 text-amber-400" />
+            <span>Login Background</span>
+          </Link>
 
           <a
             href="/"

@@ -125,3 +125,17 @@ export interface CustomerCakeSuggestion {
   created_at: string;
 }
 
+export interface LoginThemeConfig {
+  background_type: 'image' | 'gradient' | 'color';
+  background_image_url?: string;
+  background_gradient?: string;
+  background_blur?: 'none' | 'sm' | 'md' | 'lg';
+  overlay_opacity: number; // 0 to 100
+  overlay_color?: string; // 'black' | 'chocolate' | 'amber' | 'velvet'
+  headline?: string;
+  tagline?: string;
+  badge_text?: string;
+  card_style?: 'white' | 'glass' | 'dark' | 'amber';
+  updated_at?: string;
+}
+
