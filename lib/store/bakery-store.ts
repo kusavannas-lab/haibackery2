@@ -91,22 +91,46 @@ export interface BulkCatalogItem {
   is_available: boolean;
   unit: string;
   description?: string;
+  image_url?: string;
   created_at?: string;
 }
 
+export function parseBulkDescription(desc?: string): { text: string; image_url?: string } {
+  if (!desc) return { text: "" };
+  if (desc.startsWith("{") && desc.endsWith("}")) {
+    try {
+      const parsed = JSON.parse(desc);
+      return { text: parsed.text || "", image_url: parsed.image_url || parsed.imageUrl };
+    } catch {}
+  }
+  const match = desc.match(/\[IMG:(.+?)\]/);
+  if (match) {
+    const image_url = match[1];
+    const text = desc.replace(/\[IMG:.+?\]/, "").trim();
+    return { text, image_url };
+  }
+  return { text: desc };
+}
+
+export function formatBulkDescription(text?: string, image_url?: string): string {
+  const cleanText = text?.trim() || "";
+  if (!image_url) return cleanText;
+  return `${cleanText} [IMG:${image_url}]`.trim();
+}
+
 export const INITIAL_BULK_CATALOG: BulkCatalogItem[] = [
-  { id: "bulk-cat-1", name: "Premium Pure Ghee Kaju Katli", rate_per_kg: 900, is_available: true, unit: "kg", description: "Made with 100% premium cashews and pure desi ghee" },
-  { id: "bulk-cat-2", name: "Pure Ghee Motichoor Laddu", rate_per_kg: 480, is_available: true, unit: "kg", description: "Fine gram flour pearls fried in desi ghee with saffron" },
-  { id: "bulk-cat-3", name: "Royal Mysore Pak (Pure Ghee)", rate_per_kg: 520, is_available: true, unit: "kg", description: "Traditional melt-in-mouth recipe with rich aroma" },
-  { id: "bulk-cat-4", name: "Kaju Pista Roll", rate_per_kg: 950, is_available: true, unit: "kg", description: "Cashew roll stuffed with pistachios" },
-  { id: "bulk-cat-5", name: "Gulab Jamun (Pure Ghee)", rate_per_kg: 420, is_available: true, unit: "kg", description: "Soft khoya dumplings in fragrant rose cardamom syrup" },
-  { id: "bulk-cat-6", name: "Special Badusha", rate_per_kg: 400, is_available: true, unit: "kg", description: "Flaky crispy golden exterior with soft juicy interior" },
-  { id: "bulk-cat-7", name: "Ajmer Kalakand / Milk Cake", rate_per_kg: 560, is_available: true, unit: "kg", description: "Rich condensed milk fudge with caramelized flavor" },
-  { id: "bulk-cat-8", name: "Dry Fruit Halwa", rate_per_kg: 650, is_available: true, unit: "kg", description: "Chewy pure ghee halwa loaded with almonds, cashews & raisins" },
-  { id: "bulk-cat-9", name: "Famous Osmania Tea Biscuits", rate_per_kg: 350, is_available: true, unit: "kg", description: "Authentic buttery sweet-and-salt tea biscuits" },
-  { id: "bulk-cat-10", name: "Cashew & Butter Cookies", rate_per_kg: 420, is_available: true, unit: "kg", description: "Crispy freshly baked bakery cookies with cashew chunks" },
-  { id: "bulk-cat-11", name: "Special Andhra Mixture / Murukku", rate_per_kg: 320, is_available: true, unit: "kg", description: "Crunchy spicy mixture with peanuts, curry leaves & spices" },
-  { id: "bulk-cat-12", name: "Multi-Tier Wedding Celebration Cake", rate_per_kg: 700, is_available: true, unit: "kg", description: "Custom decorated tiered fresh cream cake for weddings" },
+  { id: "bulk-cat-1", name: "Premium Pure Ghee Kaju Katli", rate_per_kg: 900, is_available: true, unit: "kg", description: "Made with 100% premium cashews and pure desi ghee", image_url: "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?w=600&auto=format&fit=crop&q=80" },
+  { id: "bulk-cat-2", name: "Pure Ghee Motichoor Laddu", rate_per_kg: 480, is_available: true, unit: "kg", description: "Fine gram flour pearls fried in desi ghee with saffron", image_url: "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=600&auto=format&fit=crop&q=80" },
+  { id: "bulk-cat-3", name: "Royal Mysore Pak (Pure Ghee)", rate_per_kg: 520, is_available: true, unit: "kg", description: "Traditional melt-in-mouth recipe with rich aroma", image_url: "https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=600&auto=format&fit=crop&q=80" },
+  { id: "bulk-cat-4", name: "Kaju Pista Roll", rate_per_kg: 950, is_available: true, unit: "kg", description: "Cashew roll stuffed with pistachios", image_url: "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?w=600&auto=format&fit=crop&q=80" },
+  { id: "bulk-cat-5", name: "Gulab Jamun (Pure Ghee)", rate_per_kg: 420, is_available: true, unit: "kg", description: "Soft khoya dumplings in fragrant rose cardamom syrup", image_url: "https://images.unsplash.com/photo-1589119908995-c6837fa14d48?w=600&auto=format&fit=crop&q=80" },
+  { id: "bulk-cat-6", name: "Special Badusha", rate_per_kg: 400, is_available: true, unit: "kg", description: "Flaky crispy golden exterior with soft juicy interior", image_url: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&auto=format&fit=crop&q=80" },
+  { id: "bulk-cat-7", name: "Ajmer Kalakand / Milk Cake", rate_per_kg: 560, is_available: true, unit: "kg", description: "Rich condensed milk fudge with caramelized flavor", image_url: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=600&auto=format&fit=crop&q=80" },
+  { id: "bulk-cat-8", name: "Dry Fruit Halwa", rate_per_kg: 650, is_available: true, unit: "kg", description: "Chewy pure ghee halwa loaded with almonds, cashews & raisins", image_url: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600&auto=format&fit=crop&q=80" },
+  { id: "bulk-cat-9", name: "Famous Osmania Tea Biscuits", rate_per_kg: 350, is_available: true, unit: "kg", description: "Authentic buttery sweet-and-salt tea biscuits", image_url: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=600&auto=format&fit=crop&q=80" },
+  { id: "bulk-cat-10", name: "Cashew & Butter Cookies", rate_per_kg: 420, is_available: true, unit: "kg", description: "Crispy freshly baked bakery cookies with cashew chunks", image_url: "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=600&auto=format&fit=crop&q=80" },
+  { id: "bulk-cat-11", name: "Special Andhra Mixture / Murukku", rate_per_kg: 320, is_available: true, unit: "kg", description: "Crunchy spicy mixture with peanuts, curry leaves & spices", image_url: "https://images.unsplash.com/photo-1599490659213-e2b9527bd087?w=600&auto=format&fit=crop&q=80" },
+  { id: "bulk-cat-12", name: "Multi-Tier Wedding Celebration Cake", rate_per_kg: 700, is_available: true, unit: "kg", description: "Custom decorated tiered fresh cream cake for weddings", image_url: "https://images.unsplash.com/photo-1535141192574-5d4897c13136?w=600&auto=format&fit=crop&q=80" },
 ];
 
 export interface UserSession {
@@ -288,7 +312,19 @@ export function useBakeryStore() {
         if (isSupabaseConfigured() && supabase) {
           const { data } = await supabase.from("bulk_catalog").select("*").order("name");
           if (data && data.length > 0) {
-            loadedBulk = data as BulkCatalogItem[];
+            loadedBulk = data.map((d: any) => {
+              const parsed = parseBulkDescription(d.description);
+              return {
+                id: d.id,
+                name: d.name,
+                rate_per_kg: d.rate_per_kg,
+                is_available: d.is_available !== false,
+                unit: d.unit || "kg",
+                description: parsed.text,
+                image_url: d.image_url || parsed.image_url || "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?w=600&auto=format&fit=crop&q=80",
+                created_at: d.created_at,
+              };
+            });
           }
         }
         if (loadedBulk.length === 0) {
@@ -591,11 +627,24 @@ export function useBakeryStore() {
           .select("*")
           .order("name");
         if (latestBulk !== null && latestBulk !== undefined && latestBulk.length > 0) {
+          const mappedBulk: BulkCatalogItem[] = latestBulk.map((d: any) => {
+            const parsed = parseBulkDescription(d.description);
+            return {
+              id: d.id,
+              name: d.name,
+              rate_per_kg: d.rate_per_kg,
+              is_available: d.is_available !== false,
+              unit: d.unit || "kg",
+              description: parsed.text,
+              image_url: d.image_url || parsed.image_url || "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?w=600&auto=format&fit=crop&q=80",
+              created_at: d.created_at,
+            };
+          });
           setBulkCatalog((prev) => {
-            if (JSON.stringify(prev) !== JSON.stringify(latestBulk)) {
-              localStorage.setItem(STORAGE_KEYS.BULK_CATALOG, JSON.stringify(latestBulk));
+            if (JSON.stringify(prev) !== JSON.stringify(mappedBulk)) {
+              localStorage.setItem(STORAGE_KEYS.BULK_CATALOG, JSON.stringify(mappedBulk));
               notifyUpdate();
-              return latestBulk as BulkCatalogItem[];
+              return mappedBulk;
             }
             return prev;
           });
@@ -1139,7 +1188,8 @@ export function useBakeryStore() {
     name: string,
     rate_per_kg: number,
     unit: string = "kg",
-    description?: string
+    description?: string,
+    image_url?: string
   ): Promise<BulkCatalogItem> => {
     const newItem: BulkCatalogItem = {
       id: `bulk-cat-${generateShortId()}`,
@@ -1148,12 +1198,21 @@ export function useBakeryStore() {
       is_available: true,
       unit: unit.trim() || "kg",
       description: description?.trim() || "",
+      image_url: image_url?.trim() || "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?w=600&auto=format&fit=crop&q=80",
       created_at: new Date().toISOString(),
     };
 
     if (isSupabaseConfigured() && supabase) {
       try {
-        const { error } = await supabase.from("bulk_catalog").insert([newItem]);
+        const payloadToSave = {
+          id: newItem.id,
+          name: newItem.name,
+          rate_per_kg: newItem.rate_per_kg,
+          is_available: newItem.is_available,
+          unit: newItem.unit,
+          description: formatBulkDescription(newItem.description, newItem.image_url),
+        };
+        const { error } = await supabase.from("bulk_catalog").insert([payloadToSave]);
         if (error) console.error("Supabase insert bulk item error:", error);
       } catch (err) {
         console.error("Supabase insert bulk item error:", err);
@@ -1172,12 +1231,15 @@ export function useBakeryStore() {
   const updateBulkItem = async (id: string, updates: Partial<BulkCatalogItem>) => {
     const original = bulkCatalog.find((item) => item.id === id);
     const updatedPayload = {
-      ...(original || {}),
-      ...updates,
       id,
       name: updates.name !== undefined ? updates.name.trim() : original?.name || "",
       rate_per_kg: updates.rate_per_kg !== undefined ? Math.max(0, Number(updates.rate_per_kg) || 0) : original?.rate_per_kg || 0,
       is_available: updates.is_available !== undefined ? updates.is_available : (original?.is_available !== false),
+      unit: updates.unit !== undefined ? updates.unit : original?.unit || "kg",
+      description: formatBulkDescription(
+        updates.description !== undefined ? updates.description : original?.description,
+        updates.image_url !== undefined ? updates.image_url : original?.image_url
+      ),
     };
 
     if (isSupabaseConfigured() && supabase) {
