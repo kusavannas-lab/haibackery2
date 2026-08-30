@@ -31,7 +31,7 @@ import {
 import { useBakeryStore } from "@/lib/store/bakery-store";
 import { CustomerCakeSuggestion, CakeSuggestionStatus } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils";
-import { ADMIN_PHONE } from "@/lib/whatsapp";
+import { ADMIN_PHONE, buildWhatsAppLink } from "@/lib/whatsapp";
 
 const STATUS_COLORS: Record<CakeSuggestionStatus, { bg: string; text: string; border: string }> = {
   New: { bg: "bg-rose-100", text: "text-rose-800", border: "border-rose-300" },
@@ -120,7 +120,7 @@ export default function AdminCakeSuggestionsPage() {
       quotedText +
       `\nWe have reviewed your design reference photo. Please let us know if you would like us to start baking!`;
 
-    return `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
+    return buildWhatsAppLink(formattedPhone, message);
   };
 
   // Metrics

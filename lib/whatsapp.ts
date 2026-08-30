@@ -7,6 +7,15 @@ export const STORE_NAME = "Hai Backery";
 export const STORE_ADDRESS = "Barrage Center, Bommika, Hiramandalam, Srikakulam – 532459, Andhra Pradesh";
 
 /**
+ * Helper to build universal WhatsApp link
+ */
+export function buildWhatsAppLink(phone: string, text: string): string {
+  const cleanPhone = phone.replace(/[^0-9]/g, "");
+  const formattedPhone = cleanPhone.startsWith("91") && cleanPhone.length > 10 ? cleanPhone : `91${cleanPhone}`;
+  return `https://api.whatsapp.com/send?phone=${formattedPhone}&text=${encodeURIComponent(text)}`;
+}
+
+/**
  * Generate WhatsApp Click-to-Chat URL for a standard bakery order
  */
 export function generateOrderWhatsAppUrl(order: Order): string {
@@ -35,13 +44,18 @@ export function generateOrderWhatsAppUrl(order: Order): string {
     `----------------------------------------\n` +
     `⚡ _Please keep this order freshly packed and ready for customer pickup at the Hai Backery counter!_`;
 
-  return `https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent(message)}`;
+  return buildWhatsAppLink(ADMIN_PHONE, message);
 }
 
 /**
  * Generate WhatsApp Click-to-Chat URL for a Custom Photo Cake Request
  */
 export function generatePhotoCakeWhatsAppUrl(request: PhotoCakeRequest): string {
+  const isWebUrl = request.image_url && (request.image_url.startsWith("http://") || request.image_url.startsWith("https://"));
+  const photoLine = isWebUrl
+    ? `🖼️ *UPLOADED PHOTO URL:*\n${request.image_url}\n`
+    : `🖼️ *UPLOADED PHOTO:*\n[Photo Saved in Hai Backery System under Request ID: ${request.id}]\n_(I am also attaching my photo in this WhatsApp chat below)_ 📸\n`;
+
   const message = `📸🎂 *NEW CUSTOM PHOTO CAKE PICKUP - ${STORE_NAME}* 🎂📸\n` +
     `----------------------------------------\n` +
     `📋 *Request ID:* ${request.id}\n` +
@@ -60,11 +74,11 @@ export function generatePhotoCakeWhatsAppUrl(request: PhotoCakeRequest): string 
     (request.estimated_price ? `💵 *Estimated Price:* ${formatCurrency(request.estimated_price)}\n` : "") +
     (request.notes ? `📝 *Special Instructions:* ${request.notes}\n` : "") +
     `----------------------------------------\n` +
-    `🖼️ *UPLOADED PHOTO URL:*\n${request.image_url}\n` +
+    photoLine +
     `----------------------------------------\n` +
     `⚡ _Hai Backery Barrage Center Bommika - Please verify image resolution & baking schedule!_`;
 
-  return `https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent(message)}`;
+  return buildWhatsAppLink(ADMIN_PHONE, message);
 }
 
 /**
@@ -73,14 +87,12 @@ export function generatePhotoCakeWhatsAppUrl(request: PhotoCakeRequest): string 
 export function generateDirectInquiryWhatsAppUrl(customText?: string): string {
   const defaultText = `Hello Shekhar Rao / Hai Backery team, I have an inquiry regarding fresh sweets, cakes & bakery items from your Bommika shop.`;
   const text = customText || defaultText;
-  return `https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent(text)}`;
+  return buildWhatsAppLink(ADMIN_PHONE, text);
 }
 
 /**
  * Generate customer direct chat link for Admin to reach the customer
  */
 export function generateAdminToCustomerWhatsAppUrl(phone: string, text: string): string {
-  const cleanPhone = phone.replace(/[^0-9]/g, "");
-  const formattedPhone = cleanPhone.startsWith("91") && cleanPhone.length > 10 ? cleanPhone : `91${cleanPhone}`;
-  return `https://wa.me/${formattedPhone}?text=${encodeURIComponent(text)}`;
+  return buildWhatsAppLink(phone, text);
 }

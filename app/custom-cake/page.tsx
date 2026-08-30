@@ -28,7 +28,7 @@ import {
 import confetti from "canvas-confetti";
 import ImageUploadDropzone from "@/components/image-upload-dropzone";
 import { useBakeryStore } from "@/lib/store/bakery-store";
-import { ADMIN_PHONE, ADMIN_NAME, STORE_ADDRESS, STORE_NAME } from "@/lib/whatsapp";
+import { ADMIN_PHONE, ADMIN_NAME, STORE_ADDRESS, STORE_NAME, buildWhatsAppLink } from "@/lib/whatsapp";
 import { CustomerCakeSuggestion } from "@/lib/types";
 
 const OCCASIONS = [
@@ -134,8 +134,14 @@ export default function CustomCakeSuggestionPage() {
 
   // WhatsApp Message Generator
   const generateWhatsAppInquiryUrl = (sug: CustomerCakeSuggestion) => {
+    const isWebUrl = sug.image_url && (sug.image_url.startsWith("http://") || sug.image_url.startsWith("https://"));
+    const photoLine = isWebUrl
+      ? `🖼️ *REFERENCE PHOTO LINK:*\n${sug.image_url}\n`
+      : `🖼️ *REFERENCE PHOTO:*\n[Photo Saved in Hai Backery System under Request ID: ${sug.id}]\n_(I am also sharing my photo here in this WhatsApp chat)_ 📸\n`;
+
     const message = `🎨🎂 *CUSTOM CAKE DESIGN SUGGESTION — ${STORE_NAME}* 🎂🎨\n` +
       `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `📋 *Request ID:* ${sug.id}\n` +
       `👤 *Customer Name:* ${sug.customer_name}\n` +
       `📞 *Customer Mobile:* ${sug.customer_phone}\n` +
       `🎉 *Occasion:* ${sug.occasion}\n` +
@@ -148,11 +154,11 @@ export default function CustomCakeSuggestionPage() {
       `📝 *HOW I WANT THE CAKE (DESIGN DETAILS):*\n"${sug.description}"\n` +
       (specialNotes ? `\n💡 *Extra Instructions:* ${specialNotes}\n` : "") +
       `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-      `🖼️ *REFERENCE PHOTO LINK:*\n${sug.image_url}\n` +
+      photoLine +
       `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
       `_Namaste Shekhar Rao garu, I have shared my cake design idea. Please review and share the price quotation & baking confirmation!_`;
 
-    return `https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent(message)}`;
+    return buildWhatsAppLink(ADMIN_PHONE, message);
   };
 
   return (
