@@ -201,12 +201,20 @@ export default function Navbar() {
             {/* Navigation & Action Buttons */}
             <div className="flex items-center gap-3">
               
+              {/* Custom Cake Idea Suggestion Link */}
+              <Link
+                href="/custom-cake"
+                className="hidden md:flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-orange-100 hover:bg-orange-200 text-chocolate-950 text-xs font-black border border-orange-300 transition"
+              >
+                <span>🎨 Suggest Cake Idea</span>
+              </Link>
+
               {/* Bulk & Event Orders Link */}
               <Link
                 href="/bulk-orders"
                 className="hidden md:flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-amber-100 hover:bg-amber-200 text-chocolate-900 text-xs font-black border border-amber-300 transition"
               >
-                <span>🎉 Bulk / Event Orders</span>
+                <span>🎉 Bulk / Events</span>
               </Link>
 
               {/* Photo Cake CTA Link */}
@@ -419,6 +427,14 @@ export default function Navbar() {
 
             {/* Mobile Navigation Links */}
             <div className="grid grid-cols-2 gap-2 pt-2">
+              <Link
+                href="/custom-cake"
+                onClick={() => setMobileMenuOpen(false)}
+                className="col-span-2 flex items-center justify-center gap-2 p-3 bg-gradient-to-r from-orange-500 to-amber-600 text-white font-extrabold text-sm rounded-xl shadow-sm"
+              >
+                <span>🎨 Suggest / Upload Custom Cake Design</span>
+              </Link>
+
               <Link
                 href="/bulk-orders"
                 onClick={() => setMobileMenuOpen(false)}

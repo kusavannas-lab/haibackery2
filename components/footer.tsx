@@ -62,6 +62,11 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2 text-sm text-amber-200/80">
               <li>
+                <Link href="/custom-cake" className="hover:text-amber-400 transition flex items-center gap-1.5 text-amber-300 font-bold">
+                  🎨 Custom Cake Design & Suggestion Studio
+                </Link>
+              </li>
+              <li>
                 <Link href="/photo-cake" className="hover:text-amber-400 transition flex items-center gap-1.5 text-amber-300 font-semibold">
                   📸 Personalized Photo Cakes
                 </Link>

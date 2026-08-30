@@ -104,3 +104,24 @@ export interface AnalyticsSummary {
   pendingOrdersCount: number;
   photoCakeCount: number;
 }
+
+export type CakeSuggestionStatus = 'New' | 'Reviewing' | 'Quoted' | 'Accepted' | 'Completed' | 'Declined';
+
+export interface CustomerCakeSuggestion {
+  id: string;
+  customer_name: string;
+  customer_phone: string;
+  description: string;
+  image_url: string;
+  occasion?: string;
+  preferred_flavor?: string;
+  estimated_weight?: string;
+  needed_date?: string;
+  needed_time?: string;
+  is_eggless?: boolean;
+  quoted_price?: number;
+  admin_notes?: string;
+  status: CakeSuggestionStatus;
+  created_at: string;
+}
+

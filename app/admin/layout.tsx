@@ -22,7 +22,8 @@ import {
   Plus,
   FolderTree,
   Scale,
-  Camera
+  Camera,
+  Palette
 } from "lucide-react";
 import { useBakeryStore } from "@/lib/store/bakery-store";
 
@@ -45,10 +46,11 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { user, isAdmin, orders, photoCakes, products, categories, bulkCatalog, loginWithGoogle, logout } = useBakeryStore();
+  const { user, isAdmin, orders, photoCakes, cakeSuggestions, products, categories, bulkCatalog, loginWithGoogle, logout } = useBakeryStore();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const pendingOrdersCount = orders.filter((o) => o.status === "Pending" || o.status === "Baking").length;
+  const newSuggestionsCount = cakeSuggestions.filter((s) => s.status === "New").length;
 
   const sidebarSections: SidebarSection[] = [
     {
@@ -92,6 +94,13 @@ export default function AdminLayout({
           icon: ShoppingBag,
           badge: pendingOrdersCount > 0 ? `${pendingOrdersCount} Active` : undefined,
           badgeColor: "bg-rose-600 text-white animate-pulse font-black",
+        },
+        {
+          name: "Cake Design Suggestions",
+          href: "/admin/suggestions",
+          icon: Palette,
+          badge: newSuggestionsCount > 0 ? `${newSuggestionsCount} New` : (cakeSuggestions.length > 0 ? `${cakeSuggestions.length}` : undefined),
+          badgeColor: newSuggestionsCount > 0 ? "bg-rose-600 text-white animate-pulse font-black" : "bg-amber-100 text-chocolate-900 font-bold",
         },
       ],
     },

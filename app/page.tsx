@@ -94,21 +94,29 @@ export default function HomePage() {
               </p>
 
               {/* CTA Action Buttons */}
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-2">
                 <a
                   href="#catalog-section"
-                  className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-bakery-600 to-amber-600 hover:from-amber-600 hover:to-bakery-700 text-white font-extrabold text-sm flex items-center justify-center gap-2.5 shadow-xl shadow-amber-500/25 transition transform hover:-translate-y-0.5"
+                  className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-bakery-600 to-amber-600 hover:from-amber-600 hover:to-bakery-700 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xl shadow-amber-500/25 transition transform hover:-translate-y-0.5"
                 >
                   <ShoppingBag className="w-4 h-4" />
                   <span>Order Bakery Menu</span>
                 </a>
 
                 <Link
+                  href="/custom-cake"
+                  className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 transition transform hover:-translate-y-0.5"
+                >
+                  <Sparkles className="w-4 h-4 text-yellow-200" />
+                  <span>Suggest Custom Cake 🎨</span>
+                </Link>
+
+                <Link
                   href="/photo-cake"
-                  className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-white hover:bg-amber-50/80 text-chocolate-900 font-extrabold text-sm flex items-center justify-center gap-2.5 border-2 border-amber-300 shadow-md transition transform hover:-translate-y-0.5"
+                  className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-white hover:bg-amber-50 text-chocolate-900 font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 border-2 border-amber-300 shadow-md transition transform hover:-translate-y-0.5"
                 >
                   <Camera className="w-4 h-4 text-bakery-600" />
-                  <span>Design Photo Cake 📸</span>
+                  <span>Photo Cake 📸</span>
                 </Link>
               </div>
 
@@ -176,6 +184,32 @@ export default function HomePage() {
             </div>
 
           </div>
+        </div>
+      </section>
+
+      {/* 1.5 Custom Cake Suggestion Banner */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-gradient-to-r from-[#2a1208] via-[#451c0b] to-[#2a1208] rounded-3xl p-6 sm:p-10 border-2 border-amber-500/40 shadow-xl text-white flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+          <div className="space-y-2 relative z-10 max-w-xl text-center md:text-left">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[11px] font-black border border-amber-500/40">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>Got an Instagram or Pinterest Cake Idea?</span>
+            </span>
+            <h3 className="text-2xl sm:text-3xl font-serif font-black text-amber-50">
+              Upload Cake Photo & Describe Your Idea
+            </h3>
+            <p className="text-xs sm:text-sm text-amber-200/90 leading-relaxed">
+              Show us any photo of a cake you desire. Describe the colors, text, and flavor — Shekhar Rao will quote the price and handcraft it for your event!
+            </p>
+          </div>
+
+          <Link
+            href="/custom-cake"
+            className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs sm:text-sm shadow-xl shadow-amber-500/30 flex items-center gap-2 shrink-0 transition transform hover:scale-105"
+          >
+            <Camera className="w-4 h-4" />
+            <span>Upload Design & Get Quote →</span>
+          </Link>
         </div>
       </section>
 

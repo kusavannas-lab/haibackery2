@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Category, Product, Order, PhotoCakeRequest, OrderStatus, PhotoCakeStatus } from "../types";
+import { Category, Product, Order, PhotoCakeRequest, OrderStatus, PhotoCakeStatus, CustomerCakeSuggestion, CakeSuggestionStatus } from "../types";
 import { INITIAL_CATEGORIES, INITIAL_PRODUCTS, INITIAL_ORDERS, INITIAL_PHOTO_CAKES } from "./seed-data";
 import { isSupabaseConfigured, supabase } from "../supabase/client";
 import { generateShortId } from "../utils";
@@ -15,6 +15,7 @@ const STORAGE_KEYS = {
   BULK_CATALOG: "hb_bulk_catalog_v2",
   PHOTO_CAKE_CONFIG: "hb_photo_cake_config_v2",
   PHOTO_CAKE_ENABLED: "hb_photo_cake_enabled_v2",
+  CAKE_SUGGESTIONS: "hb_cake_suggestions_v2",
 };
 
 export interface PhotoCakeFlavor {
@@ -173,6 +174,15 @@ export function useBakeryStore() {
   });
   const [orders, setOrders] = useState<Order[]>([]);
   const [photoCakes, setPhotoCakes] = useState<PhotoCakeRequest[]>([]);
+  const [cakeSuggestions, setCakeSuggestions] = useState<CustomerCakeSuggestion[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const local = localStorage.getItem(STORAGE_KEYS.CAKE_SUGGESTIONS);
+        if (local) return JSON.parse(local);
+      } catch {}
+    }
+    return [];
+  });
   const [user, setUser] = useState<UserSession>({
     email: "",
     name: "",
@@ -331,6 +341,41 @@ export function useBakeryStore() {
           }
         }
         setPhotoCakeConfig(loadedPhotoConfig);
+
+        // 8. Load Customer Cake Suggestions
+        let loadedSuggestions: CustomerCakeSuggestion[] = [];
+        if (isSupabaseConfigured() && supabase) {
+          const { data } = await supabase
+            .from("photo_cake_requests")
+            .select("*")
+            .like("id", "sug-%")
+            .order("created_at", { ascending: false });
+          if (data && data.length > 0) {
+            loadedSuggestions = data.map((d: any) => ({
+              id: d.id,
+              customer_name: d.customer_name,
+              customer_phone: d.customer_phone,
+              description: d.message || d.special_notes || "",
+              image_url: d.image_url,
+              occasion: d.cake_shape || "Custom Occasion",
+              preferred_flavor: d.cake_flavor,
+              estimated_weight: d.cake_weight,
+              needed_date: d.delivery_date,
+              needed_time: d.delivery_time,
+              is_eggless: d.eggless || false,
+              quoted_price: d.estimated_price,
+              admin_notes: d.special_notes,
+              status: (d.status || "New") as CakeSuggestionStatus,
+              created_at: d.created_at,
+            }));
+            localStorage.setItem(STORAGE_KEYS.CAKE_SUGGESTIONS, JSON.stringify(loadedSuggestions));
+          }
+        }
+        if (loadedSuggestions.length === 0 && typeof window !== "undefined") {
+          const localSug = localStorage.getItem(STORAGE_KEYS.CAKE_SUGGESTIONS);
+          if (localSug) loadedSuggestions = JSON.parse(localSug);
+        }
+        setCakeSuggestions(loadedSuggestions);
       } catch (err) {
         console.error("Error initializing bakery store:", err);
       } finally {
@@ -372,6 +417,9 @@ export function useBakeryStore() {
 
         const localPhotoCakes = localStorage.getItem(STORAGE_KEYS.PHOTO_CAKES);
         if (localPhotoCakes) setPhotoCakes(JSON.parse(localPhotoCakes));
+
+        const localSuggestions = localStorage.getItem(STORAGE_KEYS.CAKE_SUGGESTIONS);
+        if (localSuggestions) setCakeSuggestions(JSON.parse(localSuggestions));
 
         const savedUser = localStorage.getItem(STORAGE_KEYS.DEMO_USER);
         if (savedUser) setUser(JSON.parse(savedUser));
@@ -548,6 +596,39 @@ export function useBakeryStore() {
               localStorage.setItem(STORAGE_KEYS.BULK_CATALOG, JSON.stringify(latestBulk));
               notifyUpdate();
               return latestBulk as BulkCatalogItem[];
+            }
+            return prev;
+          });
+        }
+
+        // 6. Sync Customer Cake Suggestions
+        const { data: latestSuggestions } = await sb
+          .from("photo_cake_requests")
+          .select("*")
+          .like("id", "sug-%")
+          .order("created_at", { ascending: false });
+        if (latestSuggestions !== null && latestSuggestions !== undefined) {
+          const mapped: CustomerCakeSuggestion[] = latestSuggestions.map((d: any) => ({
+            id: d.id,
+            customer_name: d.customer_name,
+            customer_phone: d.customer_phone,
+            description: d.message || d.special_notes || "",
+            image_url: d.image_url,
+            occasion: d.cake_shape || "Custom Occasion",
+            preferred_flavor: d.cake_flavor,
+            estimated_weight: d.cake_weight,
+            needed_date: d.delivery_date,
+            needed_time: d.delivery_time,
+            is_eggless: d.eggless || false,
+            quoted_price: d.estimated_price,
+            admin_notes: d.special_notes,
+            status: (d.status || "New") as CakeSuggestionStatus,
+            created_at: d.created_at,
+          }));
+          setCakeSuggestions((prev) => {
+            if (JSON.stringify(prev) !== JSON.stringify(mapped)) {
+              localStorage.setItem(STORAGE_KEYS.CAKE_SUGGESTIONS, JSON.stringify(mapped));
+              return mapped;
             }
             return prev;
           });
@@ -953,6 +1034,106 @@ export function useBakeryStore() {
     notifyUpdate();
   };
 
+  // Customer Cake Suggestions & Custom Cake Design Requests
+  const submitCakeSuggestion = async (
+    data: Omit<CustomerCakeSuggestion, "id" | "status" | "created_at">
+  ): Promise<CustomerCakeSuggestion> => {
+    const newSug: CustomerCakeSuggestion = {
+      ...data,
+      id: `sug-${generateShortId()}`,
+      status: "New",
+      created_at: new Date().toISOString(),
+    };
+
+    if (isSupabaseConfigured() && supabase) {
+      try {
+        const { error } = await supabase.from("photo_cake_requests").insert([
+          {
+            id: newSug.id,
+            customer_name: newSug.customer_name,
+            customer_phone: newSug.customer_phone,
+            cake_flavor: newSug.preferred_flavor || "Custom Flavor",
+            cake_weight: newSug.estimated_weight || "1 kg",
+            cake_shape: newSug.occasion || "Custom Occasion",
+            image_url: newSug.image_url,
+            message: newSug.description,
+            special_notes: newSug.admin_notes || "",
+            delivery_date: newSug.needed_date || new Date().toISOString().split("T")[0],
+            delivery_time: newSug.needed_time || "Any Time",
+            status: newSug.status,
+          },
+        ]);
+        if (error) console.error("Supabase submit cake suggestion error:", error);
+      } catch (err) {
+        console.error("Supabase submit cake suggestion error:", err);
+      }
+    }
+
+    const updated = [newSug, ...cakeSuggestions];
+    setCakeSuggestions(updated);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEYS.CAKE_SUGGESTIONS, JSON.stringify(updated));
+    }
+    notifyUpdate();
+    return newSug;
+  };
+
+  const updateSuggestionStatus = async (
+    id: string,
+    status: CakeSuggestionStatus,
+    quotedPrice?: number,
+    adminNotes?: string
+  ) => {
+    const updates: any = { status };
+    if (quotedPrice !== undefined) updates.estimated_price = quotedPrice;
+    if (adminNotes !== undefined) updates.special_notes = adminNotes;
+
+    if (isSupabaseConfigured() && supabase) {
+      try {
+        const { error } = await supabase.from("photo_cake_requests").update(updates).eq("id", id);
+        if (error) console.error("Supabase update suggestion error:", error);
+      } catch (err) {
+        console.error("Supabase update suggestion error:", err);
+      }
+    }
+
+    const updated = cakeSuggestions.map((sug) => {
+      if (sug.id === id) {
+        return {
+          ...sug,
+          status,
+          quoted_price: quotedPrice !== undefined ? quotedPrice : sug.quoted_price,
+          admin_notes: adminNotes !== undefined ? adminNotes : sug.admin_notes,
+        };
+      }
+      return sug;
+    });
+
+    setCakeSuggestions(updated);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEYS.CAKE_SUGGESTIONS, JSON.stringify(updated));
+    }
+    notifyUpdate();
+  };
+
+  const deleteCakeSuggestion = async (id: string) => {
+    if (isSupabaseConfigured() && supabase) {
+      try {
+        const { error } = await supabase.from("photo_cake_requests").delete().eq("id", id);
+        if (error) console.error("Supabase delete suggestion error:", error);
+      } catch (err) {
+        console.error("Supabase delete suggestion error:", err);
+      }
+    }
+
+    const updated = cakeSuggestions.filter((sug) => sug.id !== id);
+    setCakeSuggestions(updated);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEYS.CAKE_SUGGESTIONS, JSON.stringify(updated));
+    }
+    notifyUpdate();
+  };
+
   // Bulk Catalog Management (Admin-Controlled Sweets & KG Rates)
   const addBulkItem = async (
     name: string,
@@ -1339,6 +1520,7 @@ export function useBakeryStore() {
     photoCakeConfig,
     orders,
     photoCakes,
+    cakeSuggestions,
     user,
     isLoading,
     isAdmin: user.role === "admin" || user.email.toLowerCase() === "haibackery@gmail.com",
@@ -1382,6 +1564,9 @@ export function useBakeryStore() {
     updateOrderStatus,
     submitPhotoCakeRequest,
     updatePhotoCakeStatus,
+    submitCakeSuggestion,
+    updateSuggestionStatus,
+    deleteCakeSuggestion,
     calculateAnalytics,
   };
 }
