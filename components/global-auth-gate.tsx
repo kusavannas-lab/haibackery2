@@ -20,13 +20,11 @@ import { GOOGLE_CLIENT_ID } from "@/lib/google-auth";
 export default function GlobalAuthGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, isAdmin, isLoading, loginWithGoogle } = useBakeryStore();
+  const { user, isAdmin, isLoading, loginWithGoogle, loginTheme } = useBakeryStore();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
-  const [customEmail, setCustomEmail] = useState("");
-  const [showCustomEmailInput, setShowCustomEmailInput] = useState(false);
 
   // Handle Google OAuth token in URL hash
   useEffect(() => {
@@ -72,6 +70,48 @@ export default function GlobalAuthGate({ children }: { children: React.ReactNode
     }
   }, [user.isLoggedIn, isAdmin, pathname, router]);
 
+  // Theme Overlay Color
+  const getOverlayColor = () => {
+    const opacity = (loginTheme.overlay_opacity ?? 45) / 100;
+    switch (loginTheme.overlay_color) {
+      case "black":
+        return `rgba(0, 0, 0, ${opacity})`;
+      case "amber":
+        return `rgba(66, 32, 6, ${opacity})`;
+      case "velvet":
+        return `rgba(45, 10, 20, ${opacity})`;
+      case "chocolate":
+      default:
+        return `rgba(34, 13, 5, ${opacity})`;
+    }
+  };
+
+  // Card Class by theme
+  const getCardClasses = () => {
+    switch (loginTheme.card_style) {
+      case "glass":
+        return "bg-white/90 backdrop-blur-md border-2 border-white/60 text-chocolate-900 shadow-2xl";
+      case "dark":
+        return "bg-[#1f0c05]/95 backdrop-blur-md border-2 border-amber-500/50 text-amber-50 shadow-2xl";
+      case "amber":
+        return "bg-amber-50/95 border-2 border-amber-300 text-chocolate-900 shadow-2xl";
+      case "white":
+      default:
+        return "bg-white border-2 border-amber-200/90 text-chocolate-900 shadow-2xl";
+    }
+  };
+
+  // Blur Class
+  const getBlurClass = () => {
+    switch (loginTheme.background_blur) {
+      case "sm": return "backdrop-blur-xs";
+      case "md": return "backdrop-blur-sm";
+      case "lg": return "backdrop-blur-md";
+      case "none":
+      default: return "";
+    }
+  };
+
   // If user is loading session from localStorage / supabase, show clean loader
   if (isLoading) {
     return (
@@ -89,7 +129,7 @@ export default function GlobalAuthGate({ children }: { children: React.ReactNode
     );
   }
 
-  // 🔒 MANDATORY GLOBAL LOGIN GATE: If not logged in, ONLY show Google Login screen
+  // 🔒 MANDATORY GLOBAL LOGIN GATE: If not logged in, show customizable login screen
   if (!user.isLoggedIn) {
     const handleLaunchGoogleOAuth = () => {
       setIsSubmitting(true);
@@ -110,23 +150,41 @@ export default function GlobalAuthGate({ children }: { children: React.ReactNode
     };
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#220d05] via-[#3d1809] to-[#1a0903] flex items-center justify-center px-4 py-12 relative overflow-hidden">
-        
-        {/* Warm Ambient Glow Orbs */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-orange-600/10 rounded-full blur-3xl pointer-events-none" />
+      <div 
+        className="min-h-screen relative flex items-center justify-center px-4 py-12 bg-cover bg-center bg-no-repeat transition-all duration-500"
+        style={{
+          backgroundImage: loginTheme.background_image_url 
+            ? `url('${loginTheme.background_image_url}')` 
+            : "linear-gradient(to bottom right, #fcf4e8, #fdebd0, #f8d7da)",
+        }}
+      >
+        {/* Background Dark Overlay */}
+        <div 
+          className={`absolute inset-0 transition-all duration-500 ${getBlurClass()}`}
+          style={{ backgroundColor: getOverlayColor() }}
+        />
 
-        <div className="w-full max-w-md bg-white rounded-3xl p-8 sm:p-10 border-2 border-amber-400 shadow-2xl space-y-6 text-center relative z-10 animate-in zoom-in-95 duration-200">
+        <div className={`w-full max-w-md rounded-3xl p-8 sm:p-10 relative z-10 space-y-6 text-center animate-in zoom-in-95 duration-200 ${getCardClasses()}`}>
           
-          {/* Logo & Name */}
+          {/* Logo & Headline */}
           <div className="space-y-3">
-            <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 flex items-center justify-center text-white mx-auto shadow-xl shadow-amber-500/30">
+            <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-amber-500 via-bakery-600 to-amber-700 flex items-center justify-center text-white mx-auto shadow-xl shadow-amber-500/25">
               <Cake className="w-9 h-9" />
             </div>
 
-            <h1 className="font-serif font-black text-3xl text-chocolate-900 tracking-tight">
-              Hai <span className="text-amber-600">Backery</span>
-            </h1>
+            <div className="space-y-1">
+              {loginTheme.badge_text && (
+                <span className="inline-block text-[10px] font-black tracking-widest uppercase px-3 py-1 rounded-full bg-amber-500/20 text-amber-600 border border-amber-500/30">
+                  {loginTheme.badge_text}
+                </span>
+              )}
+              <h1 className="font-serif font-black text-3xl tracking-tight">
+                {loginTheme.headline || "Hai Backery"}
+              </h1>
+              <p className="text-xs opacity-80 max-w-xs mx-auto leading-relaxed">
+                {loginTheme.tagline || "Authentic Sweets & Custom Designer Cakes • Barrage Center"}
+              </p>
+            </div>
           </div>
 
           {/* Feedback Alerts */}
@@ -145,7 +203,7 @@ export default function GlobalAuthGate({ children }: { children: React.ReactNode
           )}
 
           {/* Authentication Actions */}
-          <div className="pt-2">
+          <div className="space-y-3 pt-2">
             <button
               type="button"
               onClick={handleLaunchGoogleOAuth}
@@ -172,6 +230,10 @@ export default function GlobalAuthGate({ children }: { children: React.ReactNode
               </svg>
               <span>{isSubmitting ? "Connecting to Google..." : "Sign in with Google"}</span>
             </button>
+
+            <p className="text-[11px] text-center opacity-70 font-medium pt-1">
+              Store Admin: Sign in with <strong>haibackery@gmail.com</strong>
+            </p>
           </div>
 
         </div>

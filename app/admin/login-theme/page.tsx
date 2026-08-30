@@ -276,6 +276,30 @@ export default function AdminLoginThemePage() {
               onChange={(url) => setFormTheme((prev) => ({ ...prev, background_image_url: url, background_type: "image" }))}
               label="Background Image (Upload local photo or paste web link)"
             />
+
+            <div className="pt-2">
+              <label className="block text-xs font-bold text-chocolate-900 mb-1">
+                Or Direct Image URL / Link
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  placeholder="https://images.unsplash.com/... or /api/upload/..."
+                  value={formTheme.background_image_url || ""}
+                  onChange={(e) => setFormTheme((prev) => ({ ...prev, background_image_url: e.target.value, background_type: "image" }))}
+                  className="flex-1 px-3.5 py-2 text-xs rounded-xl border border-amber-200 focus:border-amber-500 focus:outline-none bg-white font-medium text-chocolate-900"
+                />
+                {formTheme.background_image_url && (
+                  <button
+                    type="button"
+                    onClick={() => setFormTheme((prev) => ({ ...prev, background_image_url: "" }))}
+                    className="px-3 py-2 text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Step C: Dark Overlay & Blur Controls */}
