@@ -81,7 +81,7 @@ export default function GlobalAuthGate({ children }: { children: React.ReactNode
             <Cake className="w-8 h-8 text-white" />
           </div>
           <div>
-            <h2 className="font-serif font-black text-xl text-chocolate-900">High Bakery</h2>
+            <h2 className="font-serif font-black text-xl text-chocolate-900">Hai Backery</h2>
             <p className="text-xs text-amber-800/80">Checking Authentication...</p>
           </div>
         </div>
@@ -125,7 +125,7 @@ export default function GlobalAuthGate({ children }: { children: React.ReactNode
             </div>
 
             <h1 className="font-serif font-black text-3xl text-chocolate-900 tracking-tight">
-              High <span className="text-amber-600">Bakery</span>
+              Hai <span className="text-amber-600">Backery</span>
             </h1>
           </div>
 

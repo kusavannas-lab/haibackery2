@@ -581,7 +581,7 @@ export function useBakeryStore() {
     const isAdmin = cleanEmail === "haibackery@gmail.com";
 
     const sessionUser: UserSession = {
-      email: cleanEmail || "customer@highbakery.in",
+      email: cleanEmail || "customer@haibackery.in",
       name: userName || (isAdmin ? "Shekhar Rao (Admin)" : "Valued Customer"),
       role: isAdmin ? "admin" : "customer",
       isLoggedIn: true,
@@ -620,7 +620,7 @@ export function useBakeryStore() {
       }
       setUser(customerUser);
       notifyUpdate();
-      return { success: true, isAdmin: false, message: "Welcome to High Bakery! Logged in as customer." };
+      return { success: true, isAdmin: false, message: "Welcome to Hai Backery! Logged in as customer." };
     }
   };
 

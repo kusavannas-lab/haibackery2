@@ -126,7 +126,7 @@ export default function Navbar() {
               <div className="flex flex-col">
                 <div className="flex items-center gap-1.5">
                   <span className="text-2xl font-bold tracking-tight text-chocolate-900 font-serif">
-                    High <span className="text-bakery-600">Bakery</span>
+                    Hai <span className="text-bakery-600">Backery</span>
                   </span>
                 </div>
                 <span className="text-[10px] uppercase tracking-widest text-amber-800 font-semibold flex items-center gap-1">
@@ -317,7 +317,7 @@ export default function Navbar() {
                     ) : (
                       <div className="p-3 space-y-2">
                         <p className="text-xs font-semibold text-chocolate-900 px-1">
-                          Welcome to High Bakery!
+                          Welcome to Hai Backery!
                         </p>
                         <p className="text-[11px] text-amber-700/80 px-1 pb-1">
                           Sign in to save delivery addresses and track custom cake orders.

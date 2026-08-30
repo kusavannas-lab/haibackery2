@@ -249,7 +249,7 @@ export default function PhotoCakePage() {
             <div>
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-bakery-800 text-xs font-bold mb-2">
                 <Sparkles className="w-3.5 h-3.5 text-bakery-600" />
-                <span>High Bakery Custom Studio</span>
+                <span>Hai Backery Custom Studio</span>
               </div>
               <h1 className="text-3xl sm:text-4xl font-serif font-extrabold text-chocolate-900">
                 Personalized Photo Cake Designer 🎂
@@ -284,7 +284,7 @@ export default function PhotoCakePage() {
             Photo Cake: Now it is not available
           </h2>
           <p className="text-xs sm:text-sm text-chocolate-900 max-w-xl mx-auto leading-relaxed font-medium">
-            Photo cake online ordering is currently disabled by High Bakery. Please contact Shekhar Rao directly on WhatsApp for offline inquiries and future bookings!
+            Photo cake online ordering is currently disabled by Hai Backery. Please contact Shekhar Rao directly on WhatsApp for offline inquiries and future bookings!
           </p>
           <div className="pt-3">
             <a
@@ -310,7 +310,7 @@ export default function PhotoCakePage() {
               Photo Cake Request Received!
             </h2>
             <p className="text-xs sm:text-sm text-amber-800/80">
-              Thank you, <strong className="text-chocolate-900">{submittedRequest.customer_name}</strong>! Your customized photo cake request has been submitted to Shekhar Rao at High Bakery.
+              Thank you, <strong className="text-chocolate-900">{submittedRequest.customer_name}</strong>! Your customized photo cake request has been submitted to Shekhar Rao at Hai Backery.
             </p>
           </div>
 
@@ -350,7 +350,7 @@ export default function PhotoCakePage() {
               href="/"
               className="inline-block text-xs text-amber-800 hover:text-chocolate-900 font-semibold"
             >
-              ← Back to High Bakery Storefront
+              ← Back to Hai Backery Storefront
             </Link>
           </div>
         </div>
@@ -599,7 +599,7 @@ export default function PhotoCakePage() {
                 {/* Pickup Location Info */}
                 <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 flex items-center gap-2">
                   <span className="font-bold">🏬 Pickup Location:</span>
-                  <span>High Bakery, Barrage Center, Bommika • Pay at Counter on Pickup</span>
+                  <span>Hai Backery, Barrage Center, Bommika • Pay at Counter on Pickup</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

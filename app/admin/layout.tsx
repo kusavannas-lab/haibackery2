@@ -140,7 +140,7 @@ export default function AdminLayout({
               Admin Portal <span className="text-amber-600">Restricted</span>
             </h1>
             <p className="text-xs text-amber-900/80 leading-relaxed">
-              This area is strictly restricted to the High Bakery proprietor (<strong>haibackery@gmail.com</strong>). Please authenticate with your official Google account.
+              This area is strictly restricted to the Hai Backery proprietor (<strong>haibackery@gmail.com</strong>). Please authenticate with your official Google account.
             </p>
           </div>
 
@@ -205,7 +205,7 @@ export default function AdminLayout({
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="font-serif font-black text-xl text-white tracking-tight">
-                  High <span className="text-amber-400">Bakery</span>
+                  Hai <span className="text-amber-400">Backery</span>
                 </span>
               </div>
               <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 inline-block mt-0.5">
@@ -304,7 +304,7 @@ export default function AdminLayout({
                     <Cake className="w-6 h-6" />
                   </div>
                   <span className="font-serif font-black text-lg text-white">
-                    High Bakery
+                    Hai Backery
                   </span>
                 </Link>
                 <button
@@ -385,7 +385,7 @@ export default function AdminLayout({
               <Menu className="w-5 h-5" />
             </button>
             <span className="font-serif font-bold text-sm text-white">
-              High Bakery Admin
+              Hai Backery Admin
             </span>
           </div>
         </header>

@@ -22,9 +22,9 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "High Bakery | Fresh Sweets, Cakes, Biscuits & Custom Photo Cakes",
-  description: "High Bakery at Barrage Center, Bommika, Hiramandalam, Srikakulam. Order fresh desi ghee sweets, Osmania biscuits, birthday cakes & custom photo cakes online with instant WhatsApp delivery.",
-  keywords: ["High Bakery", "Hai Bakery", "Bommika Bakery", "Hiramandalam Cakes", "Srikakulam Sweets", "Custom Photo Cakes", "Shekhar Rao"],
+  title: "Hai Backery | Fresh Sweets, Cakes, Biscuits & Custom Photo Cakes",
+  description: "Hai Backery at Barrage Center, Bommika, Hiramandalam, Srikakulam. Order fresh desi ghee sweets, Osmania biscuits, birthday cakes & custom photo cakes online with instant WhatsApp delivery.",
+  keywords: ["Hai Backery", "Hai Bakery", "High Bakery", "Bommika Bakery", "Hiramandalam Cakes", "Srikakulam Sweets", "Custom Photo Cakes", "Shekhar Rao"],
 };
 
 export default function RootLayout({

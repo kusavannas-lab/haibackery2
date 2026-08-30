@@ -38,7 +38,7 @@ interface CustomSweetItem {
   productId?: string;
 }
 
-// Standard Sweet Price Catalog fixed by High Bakery Admin (Shekhar Rao)
+// Standard Sweet Price Catalog fixed by Hai Backery Admin (Shekhar Rao)
 const ADMIN_FIXED_SWEET_MENU = [
   { name: "Premium Pure Ghee Kaju Katli", ratePerKg: 900 },
   { name: "Pure Ghee Motichoor Laddu", ratePerKg: 480 },
@@ -52,7 +52,7 @@ const ADMIN_FIXED_SWEET_MENU = [
   { name: "Cashew & Butter Cookies", ratePerKg: 420 },
   { name: "Special Andhra Mixture / Murukku", ratePerKg: 320 },
   { name: "Multi-Tier Wedding Celebration Cake", ratePerKg: 700 },
-  { name: "High Bakery Special Mixed Sweets Box", ratePerKg: 600 },
+  { name: "Hai Backery Special Mixed Sweets Box", ratePerKg: 600 },
 ];
 
 const INITIAL_ITEMS: CustomSweetItem[] = [
@@ -249,7 +249,7 @@ export default function BulkOrdersPage() {
       )
       .join("\n");
 
-    const message = `*HIGH BAKERY — BULK EVENT ORDER*
+    const message = `*HAI BACKERY — BULK EVENT ORDER*
 ━━━━━━━━━━━━━━━━━━━━
 👑 *Store:* ${STORE_NAME}
 📍 *Address:* ${STORE_ADDRESS}
@@ -301,7 +301,7 @@ _Namaste Shekhar Rao garu, please confirm availability and delivery slot for our
             </h1>
 
             <p className="text-xs sm:text-sm text-amber-200/90 leading-relaxed">
-              Select your favorite sweets and choose how many kilograms (kg) you need. All sweet rates are <strong>fixed and guaranteed by High Bakery Admin (Shekhar Rao)</strong> with automatic bulk event discounts up to <strong>20% OFF</strong>.
+              Select your favorite sweets and choose how many kilograms (kg) you need. All sweet rates are <strong>fixed and guaranteed by Hai Backery Admin (Shekhar Rao)</strong> with automatic bulk event discounts up to <strong>20% OFF</strong>.
             </p>
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -744,7 +744,7 @@ _Namaste Shekhar Rao garu, please confirm availability and delivery slot for our
               <div className="p-3 bg-[#190903] rounded-2xl border border-amber-700/50 space-y-1.5 text-[11px] text-amber-200/80">
                 <p className="font-bold text-amber-300 flex items-center gap-1">
                   <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-                  <span>High Bakery Price Guarantee:</span>
+                  <span>Hai Backery Price Guarantee:</span>
                 </p>
                 <p>• All rates are fixed & authorized by Shekhar Rao</p>
                 <p>• 100% Pure Desi Ghee & Fresh Morning Baking</p>

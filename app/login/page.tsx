@@ -132,7 +132,7 @@ export default function LoginPage() {
           </div>
 
           <h1 className="font-serif font-black text-3xl text-chocolate-900 tracking-tight">
-            High <span className="text-amber-600">Bakery</span>
+            Hai <span className="text-amber-600">Backery</span>
           </h1>
         </div>
 

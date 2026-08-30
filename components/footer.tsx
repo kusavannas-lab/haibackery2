@@ -40,7 +40,7 @@ export default function Footer() {
                 <Cake className="w-6 h-6 text-white" />
               </div>
               <span className="text-2xl font-serif font-bold text-white tracking-tight">
-                High <span className="text-amber-400">Bakery</span>
+                Hai <span className="text-amber-400">Backery</span>
               </span>
             </div>
             
@@ -136,7 +136,7 @@ export default function Footer() {
 
             <div className="space-y-2">
               <a
-                href={`https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent('Hello Shekhar Rao, I would like to place an order at High Bakery Bommika.')}`}
+                href={`https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent('Hello Shekhar Rao, I would like to place an order at Hai Backery Bommika.')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/30 transition transform hover:-translate-y-0.5"
@@ -159,7 +159,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-amber-300/70">
-          <p>© {new Date().getFullYear()} High Bakery (Shekhar Rao). All rights reserved. Barrage Center, Bommika, Hiramandalam.</p>
+          <p>© {new Date().getFullYear()} Hai Backery (Shekhar Rao). All rights reserved. Barrage Center, Bommika, Hiramandalam.</p>
           
           <div className="flex items-center gap-4">
             <Link href="/admin/inventory" className="hover:text-amber-200 transition font-medium">

@@ -90,7 +90,7 @@ export default function HomePage() {
 
               {/* Description */}
               <p className="text-base sm:text-lg text-amber-950/80 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Welcome to <strong>High Bakery</strong> by Shekhar Rao. Enjoy rich pure ghee sweets, melt-in-mouth Osmania biscuits, celebration cakes, and custom photo cakes freshly baked at Barrage Center, Bommika. Order online and pickup at counter!
+                Welcome to <strong>Hai Backery</strong> by Shekhar Rao. Enjoy rich pure ghee sweets, melt-in-mouth Osmania biscuits, celebration cakes, and custom photo cakes freshly baked at Barrage Center, Bommika. Order online and pickup at counter!
               </p>
 
               {/* CTA Action Buttons */}
@@ -138,7 +138,7 @@ export default function HomePage() {
                 <div className="w-full h-full rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-amber-50 relative group">
                   <img
                     src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80"
-                    alt="High Bakery Celebration Cake"
+                    alt="Hai Backery Celebration Cake"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-end p-6 text-white">
@@ -270,7 +270,7 @@ export default function HomePage() {
                 📸 Design Custom Photo Cake
               </Link>
               <a
-                href={`https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent('Hi Shekhar Rao, I want to inquire about High Bakery products.')}`}
+                href={`https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent('Hi Shekhar Rao, I want to inquire about Hai Backery products.')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition flex items-center gap-1.5"
@@ -306,7 +306,7 @@ export default function HomePage() {
                           {cat.name}
                         </h3>
                         <p className="text-xs text-amber-800/80">
-                          Freshly prepared at High Bakery counter
+                          Freshly prepared at Hai Backery counter
                         </p>
                       </div>
                     </div>
@@ -455,7 +455,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 4. Why Choose High Bakery */}
+      {/* 4. Why Choose Hai Backery */}
       <section className="bg-amber-100/50 py-16 border-y border-amber-200/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           <div className="text-center max-w-2xl mx-auto space-y-2">
@@ -525,7 +525,7 @@ export default function HomePage() {
               <span>Visit Our Bakery in Person</span>
             </div>
             <h3 className="font-serif font-bold text-2xl text-chocolate-900">
-              High Bakery - Barrage Center, Bommika
+              Hai Backery - Barrage Center, Bommika
             </h3>
             <p className="text-xs sm:text-sm text-amber-900/80 max-w-xl">
               {STORE_ADDRESS}
