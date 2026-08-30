@@ -27,6 +27,7 @@ import {
   ShieldCheck,
   Check,
   RotateCcw,
+  Download,
 } from "lucide-react";
 import { useBakeryStore } from "@/lib/store/bakery-store";
 import { CustomerCakeSuggestion, CakeSuggestionStatus } from "@/lib/types";
@@ -121,6 +122,33 @@ export default function AdminCakeSuggestionsPage() {
       `\nWe have reviewed your design reference photo. Please let us know if you would like us to start baking!`;
 
     return buildWhatsAppLink(formattedPhone, message);
+  };
+
+  const downloadImage = async (url: string, filename = "cake-reference-photo.jpg") => {
+    if (!url) return;
+    try {
+      if (url.startsWith("data:")) {
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        return;
+      }
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch {
+      window.open(url, "_blank");
+    }
   };
 
   // Metrics
@@ -371,8 +399,8 @@ export default function AdminCakeSuggestionsPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-start">
                     
                     {/* Reference Photo Thumbnail (Click to open full zoom) */}
-                    <div className="sm:col-span-5 relative group cursor-pointer" onClick={() => setActiveModalImage(sug.image_url)}>
-                      <div className="w-full aspect-square rounded-2xl overflow-hidden border-2 border-amber-300 shadow-sm bg-amber-50 relative">
+                    <div className="sm:col-span-5 space-y-2">
+                      <div className="w-full aspect-square rounded-2xl overflow-hidden border-2 border-amber-300 shadow-sm bg-amber-50 relative group cursor-pointer" onClick={() => setActiveModalImage(sug.image_url)}>
                         <img
                           src={sug.image_url}
                           alt="Customer Reference"
@@ -383,9 +411,29 @@ export default function AdminCakeSuggestionsPage() {
                           <span>View Full Photo</span>
                         </div>
                       </div>
-                      <span className="text-[10px] text-amber-800 text-center block pt-1 font-bold">
-                        🔍 Click to Zoom Photo
-                      </span>
+
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setActiveModalImage(sug.image_url)}
+                          className="flex-1 py-1.5 px-2 rounded-lg bg-amber-100 hover:bg-amber-200 text-chocolate-900 font-bold text-[10px] flex items-center justify-center gap-1 transition"
+                        >
+                          <Eye className="w-3 h-3 text-bakery-700" />
+                          <span>Zoom</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            downloadImage(sug.image_url, `cake-reference-${sug.id}.jpg`);
+                          }}
+                          className="flex-1 py-1.5 px-2 rounded-lg bg-amber-200 hover:bg-amber-300 text-chocolate-950 font-black text-[10px] flex items-center justify-center gap-1 shadow-xs transition"
+                          title="Download photo to your device"
+                        >
+                          <Download className="w-3 h-3 text-bakery-700" />
+                          <span>Download</span>
+                        </button>
+                      </div>
                     </div>
 
                     {/* Customer Design Description */}
@@ -504,13 +552,23 @@ export default function AdminCakeSuggestionsPage() {
           >
             <div className="p-4 bg-chocolate-900 text-white flex items-center justify-between">
               <span className="font-serif font-bold text-sm">Customer Reference Cake Photo</span>
-              <button
-                type="button"
-                onClick={() => setActiveModalImage(null)}
-                className="p-1 rounded-lg text-amber-200 hover:bg-chocolate-800"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => downloadImage(activeModalImage, "cake-reference-full.jpg")}
+                  className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-chocolate-950 font-black text-xs flex items-center gap-1.5 shadow transition"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download Photo</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveModalImage(null)}
+                  className="p-1 rounded-lg text-amber-200 hover:bg-chocolate-800"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
             
             <div className="flex-1 overflow-auto p-4 flex items-center justify-center bg-amber-50/50">
@@ -523,13 +581,23 @@ export default function AdminCakeSuggestionsPage() {
 
             <div className="p-4 bg-white border-t border-amber-100 flex items-center justify-between text-xs">
               <span className="text-amber-900 font-semibold">Inspect colors, theme toppers, and tier structure.</span>
-              <button
-                type="button"
-                onClick={() => setActiveModalImage(null)}
-                className="px-4 py-2 bg-amber-100 text-chocolate-900 font-bold rounded-xl hover:bg-amber-200 transition"
-              >
-                Close Preview
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => downloadImage(activeModalImage, "cake-reference-full.jpg")}
+                  className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-black rounded-xl shadow flex items-center gap-1.5 transition"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download Image (JPG)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveModalImage(null)}
+                  className="px-4 py-2 bg-amber-100 text-chocolate-900 font-bold rounded-xl hover:bg-amber-200 transition"
+                >
+                  Close Preview
+                </button>
+              </div>
             </div>
           </div>
         </div>

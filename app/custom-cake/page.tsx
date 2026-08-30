@@ -24,6 +24,7 @@ import {
   Upload,
   RefreshCw,
   Scale,
+  Download,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import ImageUploadDropzone from "@/components/image-upload-dropzone";
@@ -161,6 +162,33 @@ export default function CustomCakeSuggestionPage() {
     return buildWhatsAppLink(ADMIN_PHONE, message);
   };
 
+  const downloadImage = async (url: string, filename = "cake-design-reference.jpg") => {
+    if (!url) return;
+    try {
+      if (url.startsWith("data:")) {
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        return;
+      }
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch {
+      window.open(url, "_blank");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#fcf4e8] via-[#fff7ed] to-[#fdebd0] py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
@@ -257,12 +285,27 @@ export default function CustomCakeSuggestionPage() {
                       </a>
                     )}
                   </div>
-                  <div className="w-36 h-36 rounded-2xl overflow-hidden border-2 border-amber-300 shadow-md">
-                    <img
-                      src={submittedSuggestion.image_url}
-                      alt="Uploaded Cake Reference"
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="flex items-center gap-3">
+                    <div className="w-36 h-36 rounded-2xl overflow-hidden border-2 border-amber-300 shadow-md shrink-0">
+                      <img
+                        src={submittedSuggestion.image_url}
+                        alt="Uploaded Cake Reference"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <button
+                        type="button"
+                        onClick={() => downloadImage(submittedSuggestion.image_url, `cake-design-${submittedSuggestion.id}.jpg`)}
+                        className="px-3.5 py-2 rounded-xl bg-amber-200 hover:bg-amber-300 text-chocolate-950 font-black text-xs flex items-center gap-1.5 shadow-sm border border-amber-300 transition"
+                      >
+                        <Download className="w-4 h-4 text-bakery-700" />
+                        <span>Download Reference Photo 📥</span>
+                      </button>
+                      <p className="text-[10px] text-amber-800/80">
+                        Save photo to your gallery to easily share or attach in WhatsApp chat!
+                      </p>
+                    </div>
                   </div>
                   <p className="text-[10px] text-emerald-800 font-semibold bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
                     ✅ Your reference photo is saved in the bakery system & linked to your WhatsApp message.
