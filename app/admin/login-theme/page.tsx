@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { 
   Palette, 
@@ -126,6 +126,12 @@ export default function AdminLoginThemePage() {
   const [formTheme, setFormTheme] = useState<LoginThemeConfig>(loginTheme);
   const [isSaved, setIsSaved] = useState(false);
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "mobile">("desktop");
+
+  useEffect(() => {
+    if (loginTheme) {
+      setFormTheme(loginTheme);
+    }
+  }, [loginTheme]);
 
   const handleApplyPreset = (preset: LoginThemeConfig) => {
     setFormTheme(preset);

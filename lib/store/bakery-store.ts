@@ -444,6 +444,32 @@ export function useBakeryStore() {
           if (localSug) loadedSuggestions = JSON.parse(localSug);
         }
         setCakeSuggestions(loadedSuggestions);
+
+        // 9. Load Login Page Customization Theme
+        let loadedTheme: LoginThemeConfig = INITIAL_LOGIN_THEME;
+        if (isSupabaseConfigured() && supabase) {
+          const { data: themeData } = await supabase
+            .from("photo_cake_config")
+            .select("*")
+            .eq("id", "login_theme")
+            .maybeSingle();
+          if (themeData && themeData.flavors && Array.isArray(themeData.flavors) && themeData.flavors[0]) {
+            loadedTheme = {
+              ...INITIAL_LOGIN_THEME,
+              ...themeData.flavors[0],
+            };
+            localStorage.setItem(STORAGE_KEYS.LOGIN_THEME, JSON.stringify(loadedTheme));
+          }
+        }
+        if (!loadedTheme || loadedTheme === INITIAL_LOGIN_THEME) {
+          const localTheme = localStorage.getItem(STORAGE_KEYS.LOGIN_THEME);
+          if (localTheme) {
+            try {
+              loadedTheme = { ...INITIAL_LOGIN_THEME, ...JSON.parse(localTheme) };
+            } catch {}
+          }
+        }
+        setLoginTheme(loadedTheme);
       } catch (err) {
         console.error("Error initializing bakery store:", err);
       } finally {
@@ -488,6 +514,13 @@ export function useBakeryStore() {
 
         const localSuggestions = localStorage.getItem(STORAGE_KEYS.CAKE_SUGGESTIONS);
         if (localSuggestions) setCakeSuggestions(JSON.parse(localSuggestions));
+
+        const localTheme = localStorage.getItem(STORAGE_KEYS.LOGIN_THEME);
+        if (localTheme) {
+          try {
+            setLoginTheme({ ...INITIAL_LOGIN_THEME, ...JSON.parse(localTheme) });
+          } catch {}
+        }
 
         const savedUser = localStorage.getItem(STORAGE_KEYS.DEMO_USER);
         if (savedUser) setUser(JSON.parse(savedUser));
@@ -798,6 +831,9 @@ export function useBakeryStore() {
       isLoggedIn: false,
     });
     notifyUpdate();
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    }
   };
 
   // Product Operations
@@ -1614,6 +1650,18 @@ export function useBakeryStore() {
     setLoginTheme(updated);
     if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEYS.LOGIN_THEME, JSON.stringify(updated));
+    }
+    if (isSupabaseConfigured() && supabase) {
+      try {
+        await supabase.from("photo_cake_config").upsert({
+          id: "login_theme",
+          is_enabled: true,
+          flavors: [updated],
+          updated_at: new Date().toISOString(),
+        });
+      } catch (err) {
+        console.error("Failed to sync login theme to Supabase:", err);
+      }
     }
     notifyUpdate();
     return updated;

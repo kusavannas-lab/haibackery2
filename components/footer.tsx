@@ -20,8 +20,8 @@ import { ADMIN_PHONE, ADMIN_NAME, STORE_ADDRESS, STORE_NAME, generateDirectInqui
 export default function Footer() {
   const pathname = usePathname();
 
-  // Do not render the customer storefront footer on admin dashboard pages
-  if (pathname.startsWith("/admin")) {
+  // Do not render the customer storefront footer on admin dashboard or login page
+  if (pathname.startsWith("/admin") || pathname === "/login") {
     return null;
   }
   return (

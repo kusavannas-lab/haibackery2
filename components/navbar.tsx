@@ -76,8 +76,8 @@ export default function Navbar() {
     }
   };
 
-  // Do not render customer navbar on admin routes
-  if (pathname.startsWith("/admin")) {
+  // Do not render customer navbar on admin routes or login page
+  if (pathname.startsWith("/admin") || pathname === "/login") {
     return null;
   }
 
