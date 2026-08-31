@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { 
   X, 
   ShoppingBag, 
@@ -12,7 +13,8 @@ import {
   Sparkles, 
   Send, 
   Truck, 
-  ShieldCheck 
+  ShieldCheck,
+  PackageCheck
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useCartStore } from "@/lib/store/cart-store";
@@ -176,6 +178,15 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                   <Send className="w-4 h-4" />
                   <span>Open WhatsApp Order Receipt</span>
                 </a>
+
+                <Link
+                  href="/my-orders"
+                  onClick={handleClose}
+                  className="w-full py-3 px-4 rounded-2xl bg-amber-100 hover:bg-amber-200 text-chocolate-950 font-bold text-xs flex items-center justify-center gap-1.5 border border-amber-300 transition"
+                >
+                  <PackageCheck className="w-4 h-4 text-bakery-700" />
+                  <span>📦 View in My Orders & Track Status</span>
+                </Link>
 
                 <button
                   onClick={handleClose}

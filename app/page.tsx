@@ -18,7 +18,8 @@ import {
   Phone, 
   CheckCircle2,
   Heart,
-  Gift
+  Gift,
+  PackageCheck
 } from "lucide-react";
 import { useBakeryStore } from "@/lib/store/bakery-store";
 import ProductCard from "@/components/product-card";
@@ -209,6 +210,36 @@ export default function HomePage() {
           >
             <Camera className="w-4 h-4" />
             <span>Upload Design & Get Quote →</span>
+          </Link>
+        </div>
+      </section>
+
+      {/* 1.7 Dedicated Customer Orders & Tracking Section */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-gradient-to-r from-amber-100 via-amber-50 to-orange-100 rounded-3xl p-6 sm:p-8 border-2 border-amber-300/80 shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+            <div className="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-bakery-800 shrink-0">
+              <PackageCheck className="w-7 h-7" />
+            </div>
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-200 text-chocolate-950 text-[10px] font-black">
+                <span>📦 Real-Time Customer Order Center</span>
+              </div>
+              <h3 className="text-xl sm:text-2xl font-serif font-black text-chocolate-900">
+                Track Your Orders & Custom Cakes
+              </h3>
+              <p className="text-xs sm:text-sm text-amber-900/80 max-w-xl">
+                Check live baking status, view past receipts, reorder your favorite sweets, or WhatsApp Shekhar Rao directly.
+              </p>
+            </div>
+          </div>
+
+          <Link
+            href="/my-orders"
+            className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-600 to-bakery-700 hover:from-amber-700 hover:to-bakery-800 text-white font-black text-xs sm:text-sm shadow-md flex items-center gap-2 shrink-0 transition transform hover:scale-105"
+          >
+            <PackageCheck className="w-4 h-4 text-amber-200" />
+            <span>View & Track My Orders →</span>
           </Link>
         </div>
       </section>

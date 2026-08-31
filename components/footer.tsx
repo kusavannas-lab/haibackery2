@@ -62,7 +62,12 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2 text-sm text-amber-200/80">
               <li>
-                <Link href="/custom-cake" className="hover:text-amber-400 transition flex items-center gap-1.5 text-amber-300 font-bold">
+                <Link href="/my-orders" className="hover:text-amber-400 transition flex items-center gap-1.5 text-amber-300 font-bold">
+                  <span>📦 Track My Orders & Custom Cakes</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/custom-cake" className="hover:text-amber-400 transition flex items-center gap-1.5 text-amber-300 font-medium">
                   🎨 Custom Cake Design & Suggestion Studio
                 </Link>
               </li>

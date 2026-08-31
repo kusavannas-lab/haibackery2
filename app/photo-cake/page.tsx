@@ -22,7 +22,8 @@ import {
   RefreshCw,
   Eye,
   Sliders,
-  ChevronDown
+  ChevronDown,
+  PackageCheck
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import PhotoCakePreview from "@/components/photo-cake-preview";
@@ -415,6 +416,14 @@ export default function PhotoCakePage() {
               <Send className="w-4 h-4" />
               <span>Send Details to WhatsApp (+91 9347166241)</span>
             </a>
+
+            <Link
+              href="/my-orders"
+              className="w-full py-3 px-4 rounded-2xl bg-amber-100 hover:bg-amber-200 text-chocolate-950 font-bold text-xs flex items-center justify-center gap-1.5 border border-amber-300 transition"
+            >
+              <PackageCheck className="w-4 h-4 text-bakery-700" />
+              <span>📦 View in My Orders & Track Status</span>
+            </Link>
 
             <Link
               href="/"

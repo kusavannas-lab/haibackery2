@@ -17,7 +17,8 @@ import {
   Cake, 
   ChevronDown,
   User,
-  Heart
+  Heart,
+  PackageCheck
 } from "lucide-react";
 import { useBakeryStore } from "@/lib/store/bakery-store";
 import { useCartStore } from "@/lib/store/cart-store";
@@ -199,6 +200,15 @@ export default function Navbar() {
             {/* Navigation & Action Buttons */}
             <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
               
+              {/* Customer Orders Hub Link */}
+              <Link
+                href="/my-orders"
+                className="hidden xl:flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-amber-100 hover:bg-amber-200 text-chocolate-950 text-xs font-black border border-amber-300 transition"
+              >
+                <PackageCheck className="w-3.5 h-3.5 text-bakery-700" />
+                <span>📦 My Orders</span>
+              </Link>
+
               {/* Custom Cake Idea Suggestion Link */}
               <Link
                 href="/custom-cake"
@@ -270,6 +280,18 @@ export default function Navbar() {
                           )}
                         </div>
 
+                        {/* Customer Orders link */}
+                        <div className="py-1 border-b border-amber-50">
+                          <Link
+                            href="/my-orders"
+                            onClick={() => setUserDropdownOpen(false)}
+                            className="w-full px-4 py-2 text-xs font-bold text-chocolate-900 hover:bg-amber-50 flex items-center gap-2"
+                          >
+                            <PackageCheck className="w-4 h-4 text-bakery-600" />
+                            <span>📦 My Orders & Live Tracking</span>
+                          </Link>
+                        </div>
+
                         {isAdmin && (
                           <div className="py-1">
                             <Link
@@ -328,6 +350,15 @@ export default function Navbar() {
                         <p className="text-[11px] text-amber-700/80 px-1 pb-1">
                           Sign in to save delivery addresses and track custom cake orders.
                         </p>
+
+                        <Link
+                          href="/my-orders"
+                          onClick={() => setUserDropdownOpen(false)}
+                          className="w-full py-2 px-3 bg-amber-100 hover:bg-amber-200 text-chocolate-950 font-bold text-xs rounded-xl flex items-center justify-center gap-2 border border-amber-300 transition"
+                        >
+                          <PackageCheck className="w-3.5 h-3.5 text-bakery-700" />
+                          <span>📦 Track My Orders</span>
+                        </Link>
 
                         <Link
                           href="/login"
@@ -425,6 +456,15 @@ export default function Navbar() {
 
             {/* Mobile Navigation Links */}
             <div className="grid grid-cols-2 gap-2 pt-2">
+              <Link
+                href="/my-orders"
+                onClick={() => setMobileMenuOpen(false)}
+                className="col-span-2 flex items-center justify-center gap-2 p-3 bg-gradient-to-r from-amber-600 to-bakery-700 text-white font-extrabold text-sm rounded-xl shadow-sm"
+              >
+                <PackageCheck className="w-4 h-4 text-amber-200" />
+                <span>📦 My Orders & Live Tracking</span>
+              </Link>
+
               <Link
                 href="/custom-cake"
                 onClick={() => setMobileMenuOpen(false)}
