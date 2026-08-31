@@ -820,10 +820,35 @@ export function useBakeryStore() {
   };
 
   const logout = async () => {
-    if (isSupabaseConfigured() && supabase) {
-      await supabase.auth.signOut();
+    try {
+      if (isSupabaseConfigured() && supabase) {
+        await supabase.auth.signOut();
+      }
+    } catch (e) {
+      console.warn("Supabase signOut error:", e);
     }
-    localStorage.removeItem(STORAGE_KEYS.DEMO_USER);
+
+    try {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem(STORAGE_KEYS.DEMO_USER);
+        localStorage.removeItem("hb_demo_user_v1");
+        localStorage.removeItem("hb_demo_user_v2");
+        localStorage.removeItem("hb_customer_email");
+        localStorage.removeItem("hb_customer_phone");
+        sessionStorage.clear();
+
+        // Clear any Supabase auth keys
+        const keysToRemove: string[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && (key.startsWith("sb-") || key.includes("auth-token") || key.includes("supabase.auth"))) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach((k) => localStorage.removeItem(k));
+      }
+    } catch {}
+
     setUser({
       email: "",
       name: "",
@@ -831,8 +856,9 @@ export function useBakeryStore() {
       isLoggedIn: false,
     });
     notifyUpdate();
+
     if (typeof window !== "undefined") {
-      window.location.href = "/login";
+      window.location.replace("/login");
     }
   };
 

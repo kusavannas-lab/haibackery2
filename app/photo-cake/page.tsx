@@ -251,10 +251,12 @@ export default function PhotoCakePage() {
     setIsSubmitting(true);
 
     try {
+      const effectiveEmail = user.isLoggedIn && user.email ? user.email.trim().toLowerCase() : customerEmail.trim().toLowerCase();
+
       const requestRecord = await submitPhotoCakeRequest({
         customer_name: customerName.trim(),
         customer_phone: customerPhone.trim(),
-        customer_email: customerEmail.trim().toLowerCase(),
+        customer_email: effectiveEmail,
         cake_flavor: selectedFlavor,
         cake_weight: selectedWeight,
         cake_shape: selectedShape,
@@ -263,7 +265,7 @@ export default function PhotoCakePage() {
         message: cakeMessage.trim(),
         delivery_date: deliveryDate,
         delivery_time: deliveryTime,
-        notes: (customerEmail.trim() ? `[Email: ${customerEmail.trim().toLowerCase()}] ` : "") + specialNotes.trim(),
+        notes: (effectiveEmail ? `[Email: ${effectiveEmail}] ` : "") + specialNotes.trim(),
         estimated_price: calculatedPrice,
         status: "Received",
       });
@@ -800,17 +802,30 @@ export default function PhotoCakePage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-chocolate-900 mb-1 flex items-center gap-1.5">
-                      <Mail className="w-3.5 h-3.5 text-bakery-600" />
-                      Email Address (For Order Tracking) *
+                    <label className="block text-xs font-bold text-chocolate-900 mb-1 flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <Mail className="w-3.5 h-3.5 text-bakery-600" />
+                        Account Email (Fixed Login)
+                      </span>
+                      {user.isLoggedIn && (
+                        <span className="text-[10px] text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+                          ✓ Logged In Account
+                        </span>
+                      )}
                     </label>
                     <input
                       type="email"
                       required
+                      readOnly={user.isLoggedIn}
+                      disabled={user.isLoggedIn}
                       placeholder="e.g. yourname@gmail.com"
-                      value={customerEmail}
+                      value={user.isLoggedIn ? user.email : customerEmail}
                       onChange={(e) => setCustomerEmail(e.target.value)}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-bakery-500/30 font-medium text-chocolate-900 bg-white"
+                      className={`w-full px-3.5 py-2.5 text-xs rounded-xl border font-medium ${
+                        user.isLoggedIn
+                          ? "border-emerald-300 bg-emerald-50/70 text-emerald-950 font-bold cursor-not-allowed"
+                          : "border-amber-200 focus:outline-none focus:ring-2 focus:ring-bakery-500/30 text-chocolate-900 bg-white"
+                      }`}
                     />
                   </div>
 

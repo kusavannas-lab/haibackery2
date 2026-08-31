@@ -66,7 +66,7 @@ const WEIGHT_OPTIONS = [
 ];
 
 export default function CustomCakeSuggestionPage() {
-  const { submitCakeSuggestion } = useBakeryStore();
+  const { submitCakeSuggestion, user } = useBakeryStore();
 
   // Form State
   const [imageUrl, setImageUrl] = useState("");
@@ -77,9 +77,9 @@ export default function CustomCakeSuggestionPage() {
   const [isEggless, setIsEggless] = useState(false);
   const [neededDate, setNeededDate] = useState("");
   const [neededTime, setNeededTime] = useState("Morning (9:00 AM - 12:00 PM)");
-  const [customerName, setCustomerName] = useState("");
+  const [customerName, setCustomerName] = useState(user.isLoggedIn ? user.name : "");
   const [customerPhone, setCustomerPhone] = useState("");
-  const [customerEmail, setCustomerEmail] = useState("");
+  const [customerEmail, setCustomerEmail] = useState(user.isLoggedIn ? user.email : "");
   const [deliveryPreference, setDeliveryPreference] = useState("Store Pickup (Barrage Center)");
   const [specialNotes, setSpecialNotes] = useState("");
 
@@ -106,10 +106,12 @@ export default function CustomCakeSuggestionPage() {
 
     setIsSubmitting(true);
     try {
+      const effectiveEmail = user.isLoggedIn && user.email ? user.email.trim().toLowerCase() : customerEmail.trim().toLowerCase();
+
       const newSug = await submitCakeSuggestion({
         customer_name: customerName.trim(),
         customer_phone: customerPhone.trim(),
-        customer_email: customerEmail.trim().toLowerCase(),
+        customer_email: effectiveEmail,
         description: description.trim(),
         image_url: imageUrl.trim(),
         occasion,
@@ -118,14 +120,14 @@ export default function CustomCakeSuggestionPage() {
         is_eggless: isEggless,
         needed_date: neededDate,
         needed_time: neededTime,
-        admin_notes: (customerEmail.trim() ? `[Email: ${customerEmail.trim().toLowerCase()}] ` : "") + `Delivery/Pickup: ${deliveryPreference} | Notes: ${specialNotes || "None"}`,
+        admin_notes: (effectiveEmail ? `[Email: ${effectiveEmail}] ` : "") + `Delivery/Pickup: ${deliveryPreference} | Notes: ${specialNotes || "None"}`,
       });
 
       // Save customer email & order ID to localStorage for My Orders filter
       if (typeof window !== "undefined") {
         try {
-          if (customerEmail.trim()) {
-            localStorage.setItem("hb_customer_email", customerEmail.trim().toLowerCase());
+          if (effectiveEmail) {
+            localStorage.setItem("hb_customer_email", effectiveEmail);
           }
           localStorage.setItem("hb_customer_phone", customerPhone.trim());
           const myIds = JSON.parse(localStorage.getItem("hb_my_order_ids") || "[]");
@@ -595,16 +597,27 @@ export default function CustomCakeSuggestionPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="block text-xs font-black text-chocolate-900 uppercase tracking-wider">
-                      Email Address (For Order Tracking) *
+                    <label className="block text-xs font-black text-chocolate-900 uppercase tracking-wider flex items-center justify-between">
+                      <span>Email Address (For Order Tracking) *</span>
+                      {user.isLoggedIn && (
+                        <span className="text-[10px] text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded-full normal-case">
+                          ✓ Logged In Account
+                        </span>
+                      )}
                     </label>
                     <input
                       type="email"
                       required
+                      readOnly={user.isLoggedIn}
+                      disabled={user.isLoggedIn}
                       placeholder="e.g. customer@gmail.com"
-                      value={customerEmail}
+                      value={user.isLoggedIn ? user.email : customerEmail}
                       onChange={(e) => setCustomerEmail(e.target.value)}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border-2 border-amber-200 focus:border-amber-500 focus:outline-none bg-white font-semibold text-chocolate-900"
+                      className={`w-full px-3.5 py-2.5 text-xs rounded-xl border-2 font-semibold ${
+                        user.isLoggedIn
+                          ? "border-emerald-300 bg-emerald-50/70 text-emerald-950 cursor-not-allowed"
+                          : "border-amber-200 focus:border-amber-500 focus:outline-none bg-white text-chocolate-900"
+                      }`}
                     />
                   </div>
 

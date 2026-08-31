@@ -27,7 +27,8 @@ import {
   Eye,
   RefreshCw,
   LogOut,
-  Edit3
+  Lock,
+  LogIn
 } from "lucide-react";
 import { useBakeryStore } from "@/lib/store/bakery-store";
 import { useCartStore } from "@/lib/store/cart-store";
@@ -38,77 +39,43 @@ import { Order, PhotoCakeRequest, CustomerCakeSuggestion } from "@/lib/types";
 type OrderTab = "all" | "bakery" | "photo-cakes" | "custom-cakes";
 
 export default function MyOrdersPage() {
-  const { orders, photoCakes, cakeSuggestions, user, isAdmin, visibleProducts } = useBakeryStore();
+  const { orders, photoCakes, cakeSuggestions, user, isAdmin, visibleProducts, logout } = useBakeryStore();
   const { addItem, openCart } = useCartStore();
 
   const [activeTab, setActiveTab] = useState<OrderTab>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  
-  // Customer active email filter (defaults to local storage or user session)
-  const [activeEmail, setActiveEmail] = useState<string>("");
-  const [inputEmail, setInputEmail] = useState<string>("");
-  const [isEditingEmail, setIsEditingEmail] = useState<boolean>(false);
   const [myOrderIds, setMyOrderIds] = useState<string[]>([]);
   const [viewAllAdminMode, setViewAllAdminMode] = useState<boolean>(false);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
-  // Load customer email from localStorage or user session on mount
+  // The customer email is STRICTLY FIXED to the logged-in user email
+  const loginEmail = user.isLoggedIn && user.email ? user.email.trim().toLowerCase() : "";
+
+  // Load device placed orders as backup
   useEffect(() => {
     if (typeof window !== "undefined") {
       try {
-        const savedEmail = localStorage.getItem("hb_customer_email") || "";
         const savedIds = JSON.parse(localStorage.getItem("hb_my_order_ids") || "[]");
         setMyOrderIds(savedIds);
-
-        if (user.isLoggedIn && !isAdmin && user.email) {
-          const userMail = user.email.trim().toLowerCase();
-          setActiveEmail(userMail);
-          setInputEmail(userMail);
-          localStorage.setItem("hb_customer_email", userMail);
-        } else if (savedEmail) {
-          const mail = savedEmail.trim().toLowerCase();
-          setActiveEmail(mail);
-          setInputEmail(mail);
-        }
       } catch {
         // ignore
       } finally {
         setIsLoaded(true);
       }
     }
-  }, [user, isAdmin]);
+  }, []);
 
-  // Save email handler
-  const handleSaveEmail = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    const clean = inputEmail.trim().toLowerCase();
-    if (!clean) return;
-    setActiveEmail(clean);
-    setIsEditingEmail(false);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("hb_customer_email", clean);
-    }
-  };
-
-  const handleClearEmail = () => {
-    setActiveEmail("");
-    setInputEmail("");
-    setIsEditingEmail(true);
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("hb_customer_email");
-    }
-  };
-
-  // Check if an item belongs to this customer
+  // Strict Match: ONLY items belonging to this fixed login email or placed by this device session
   const isCustomerMatch = (itemEmail: string | undefined, itemNotes: string | undefined, orderId: string) => {
     if (isAdmin && viewAllAdminMode) return true;
+    if (loginEmail) {
+      if (itemEmail && itemEmail.trim().toLowerCase() === loginEmail) return true;
+      if (itemNotes && itemNotes.toLowerCase().includes(loginEmail)) return true;
+      if (myOrderIds.includes(orderId)) return true;
+      return false;
+    }
+    // Guest fallback: only explicitly placed order IDs on this browser session
     if (myOrderIds.includes(orderId)) return true;
-    if (!activeEmail.trim()) return false;
-    
-    const targetEmail = activeEmail.trim().toLowerCase();
-    if (itemEmail && itemEmail.trim().toLowerCase() === targetEmail) return true;
-    if (itemNotes && itemNotes.toLowerCase().includes(targetEmail)) return true;
-    
     return false;
   };
 
@@ -125,7 +92,7 @@ export default function MyOrdersPage() {
       }
       return true;
     });
-  }, [orders, activeEmail, myOrderIds, viewAllAdminMode, isAdmin, searchQuery]);
+  }, [orders, loginEmail, myOrderIds, viewAllAdminMode, isAdmin, searchQuery]);
 
   // Filter Photo Cakes
   const filteredPhotoCakes = useMemo(() => {
@@ -142,7 +109,7 @@ export default function MyOrdersPage() {
       }
       return true;
     });
-  }, [photoCakes, activeEmail, myOrderIds, viewAllAdminMode, isAdmin, searchQuery]);
+  }, [photoCakes, loginEmail, myOrderIds, viewAllAdminMode, isAdmin, searchQuery]);
 
   // Filter Custom Suggestions
   const filteredSuggestions = useMemo(() => {
@@ -158,7 +125,7 @@ export default function MyOrdersPage() {
       }
       return true;
     });
-  }, [cakeSuggestions, activeEmail, myOrderIds, viewAllAdminMode, isAdmin, searchQuery]);
+  }, [cakeSuggestions, loginEmail, myOrderIds, viewAllAdminMode, isAdmin, searchQuery]);
 
   const totalCount = filteredOrders.length + filteredPhotoCakes.length + filteredSuggestions.length;
 
@@ -216,7 +183,8 @@ export default function MyOrdersPage() {
 
   if (!isLoaded) return null;
 
-  const showEmailPrompt = !activeEmail && (!isAdmin || !viewAllAdminMode) && myOrderIds.length === 0;
+  // If user is not logged in and has no active orders
+  const isNotLoggedIn = !user.isLoggedIn;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#fcf4e8] via-[#fff7ed] to-[#fdebd0] py-6 sm:py-10">
@@ -235,7 +203,7 @@ export default function MyOrdersPage() {
             </h1>
 
             <p className="text-xs sm:text-sm text-amber-200/90 leading-relaxed">
-              View and track <strong>only your personal orders</strong>, custom photo cakes, and special cake design ideas placed with Hai Backery.
+              Strictly secured and locked to your <strong>verified login account</strong>. View only your personal bakery orders and custom cakes.
             </p>
           </div>
 
@@ -271,101 +239,92 @@ export default function MyOrdersPage() {
           </div>
         </div>
 
-        {/* 2. Customer Email Bar / Verification Card */}
-        {showEmailPrompt || isEditingEmail ? (
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border-2 border-amber-300 shadow-xl max-w-xl mx-auto text-center space-y-4 animate-in zoom-in-95 duration-200">
-            <div className="w-14 h-14 rounded-2xl bg-amber-100 flex items-center justify-center mx-auto text-bakery-700">
-              <Mail className="w-7 h-7" />
+        {/* 2. Fixed Login Email Account Bar or Sign In Gate */}
+        {isNotLoggedIn && myOrderIds.length === 0 ? (
+          <div className="bg-white rounded-3xl p-8 sm:p-10 border-2 border-amber-300 shadow-xl max-w-xl mx-auto text-center space-y-5 animate-in zoom-in-95 duration-200">
+            <div className="w-16 h-16 rounded-2xl bg-amber-100 flex items-center justify-center mx-auto text-bakery-700">
+              <Lock className="w-8 h-8" />
             </div>
 
-            <div className="space-y-1">
-              <h2 className="font-serif font-black text-xl text-chocolate-900">
-                Enter Your Email Address
+            <div className="space-y-2">
+              <h2 className="font-serif font-black text-2xl text-chocolate-900">
+                Please Sign In to View Your Orders
               </h2>
-              <p className="text-xs text-amber-800/80 max-w-md mx-auto">
-                To keep your orders private and securely show only your personal bakery orders & custom cakes, enter your email address:
+              <p className="text-xs sm:text-sm text-amber-800/80 max-w-md mx-auto leading-relaxed">
+                To guarantee your privacy and ensure orders cannot be accessed by anyone else, your orders are strictly fixed to your login email account.
               </p>
             </div>
 
-            <form onSubmit={handleSaveEmail} className="space-y-3 pt-2">
-              <div className="flex rounded-2xl border-2 border-amber-300 overflow-hidden bg-amber-50/60 focus-within:ring-2 focus-within:ring-amber-500">
-                <span className="px-4 py-3 bg-amber-100 text-chocolate-900 font-black text-sm flex items-center border-r border-amber-300">
-                  ✉️ Email
-                </span>
-                <input
-                  type="email"
-                  required
-                  placeholder="Enter your email (e.g. name@gmail.com)"
-                  value={inputEmail}
-                  onChange={(e) => setInputEmail(e.target.value)}
-                  className="flex-1 px-4 py-3 bg-transparent text-chocolate-900 text-sm font-bold placeholder:text-amber-700/50 focus:outline-none"
-                />
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  type="submit"
-                  className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-bakery-600 hover:from-amber-600 hover:to-bakery-700 text-white font-black text-xs sm:text-sm shadow-lg shadow-amber-500/25 transition"
-                >
-                  View My Orders 📦
-                </button>
-                {activeEmail && (
-                  <button
-                    type="button"
-                    onClick={() => setIsEditingEmail(false)}
-                    className="px-4 py-3.5 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs"
-                  >
-                    Cancel
-                  </button>
-                )}
-              </div>
-            </form>
+            <div className="pt-2">
+              <Link
+                href="/login"
+                className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-bakery-600 to-amber-600 hover:from-amber-600 hover:to-bakery-700 text-white font-extrabold text-sm shadow-xl shadow-amber-500/25 flex items-center justify-center gap-2 transition transform hover:scale-[1.01]"
+              >
+                <LogIn className="w-4 h-4" />
+                <span>Sign In to Access Your Orders</span>
+              </Link>
+            </div>
           </div>
         ) : (
-          /* Active Customer Identifier Bar */
+          /* Fixed Logged-In User Account Indicator (No manual editing permitted) */
           <div className="bg-white rounded-3xl p-4 sm:p-5 border-2 border-amber-200 shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-100 border border-amber-300 flex items-center justify-center text-bakery-700 shrink-0">
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-amber-100 border border-amber-300 flex items-center justify-center text-bakery-700 shrink-0">
                 <User className="w-5 h-5" />
               </div>
-              <div className="text-left">
-                <span className="text-[10px] uppercase font-black tracking-wider text-amber-700 block">
-                  Viewing Personal Orders For:
-                </span>
+              <div className="text-left space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] uppercase font-black tracking-wider text-amber-700">
+                    Logged In Account (Fixed):
+                  </span>
+                  <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2 py-0.5 rounded-full border border-emerald-300">
+                    ✓ Verified Email
+                  </span>
+                </div>
                 <div className="flex items-center gap-2">
                   <span className="font-extrabold text-chocolate-900 text-sm sm:text-base">
-                    {activeEmail ? `✉️ ${activeEmail}` : "📍 This Device's Placed Orders"}
+                    {loginEmail ? `✉️ ${loginEmail}` : "📍 This Device's Active Orders"}
                   </span>
-                  <span className="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-emerald-300">
-                    Active Customer
-                  </span>
+                  {user.name && (
+                    <span className="text-xs text-amber-800 font-semibold hidden md:inline">
+                      ({user.name})
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
 
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <button
-                type="button"
-                onClick={() => {
-                  setInputEmail(activeEmail);
-                  setIsEditingEmail(true);
-                }}
-                className="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-amber-100 hover:bg-amber-200 text-chocolate-950 font-bold text-xs flex items-center justify-center gap-1.5 border border-amber-300 transition"
-              >
-                <Edit3 className="w-3.5 h-3.5 text-bakery-700" />
-                <span>Switch Email Address</span>
-              </button>
+              {user.isLoggedIn ? (
+                <button
+                  type="button"
+                  onClick={() => logout()}
+                  className="w-full sm:w-auto px-4 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs flex items-center justify-center gap-1.5 border border-rose-200 transition"
+                  title="Sign out of current account"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span>Sign Out Account</span>
+                </button>
+              ) : (
+                <Link
+                  href="/login"
+                  className="w-full sm:w-auto px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-chocolate-950 font-black text-xs flex items-center justify-center gap-1.5 transition"
+                >
+                  <LogIn className="w-3.5 h-3.5" />
+                  <span>Sign In</span>
+                </Link>
+              )}
             </div>
           </div>
         )}
 
         {/* 3. Search & Tabs Filter */}
-        {(!showEmailPrompt || isEditingEmail === false) && (
+        {(user.isLoggedIn || myOrderIds.length > 0) && (
           <div className="bg-white rounded-3xl p-4 sm:p-6 border-2 border-amber-200 shadow-md space-y-4">
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search within your orders by Order ID, item name, flavor..."
+                placeholder="Search within your personal orders by Order ID, item name, flavor..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-amber-50/70 border border-amber-200 text-sm text-chocolate-900 placeholder:text-amber-800/50 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500"
@@ -446,79 +405,81 @@ export default function MyOrdersPage() {
         )}
 
         {/* 4. Orders Content List */}
-        {totalCount === 0 ? (
-          /* Empty State */
-          <div className="bg-white rounded-3xl p-8 sm:p-12 text-center border-2 border-amber-200 shadow-xl space-y-4 max-w-2xl mx-auto">
-            <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mx-auto text-amber-700">
-              <ShoppingBag className="w-8 h-8" />
-            </div>
-            <div className="space-y-1">
-              <h3 className="font-serif font-black text-xl text-chocolate-900">
-                No Orders Found for This Customer
-              </h3>
-              <p className="text-xs text-amber-800/80 max-w-md mx-auto">
-                {activeEmail
-                  ? `No orders found for ${activeEmail}. If you used a different email address, tap "Switch Email Address" above.`
-                  : "You haven't placed any orders yet. Explore our delicious sweets, bakery items, or design a custom photo cake!"}
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-              <Link
-                href="/#catalog-section"
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-bakery-600 text-white font-black text-xs shadow-md"
-              >
-                Browse Menu & Order
-              </Link>
-              <Link
-                href="/photo-cake"
-                className="px-5 py-2.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-chocolate-900 font-black text-xs border border-amber-300"
-              >
-                Design Photo Cake 📸
-              </Link>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            
-            {/* Section A: Regular Bakery Orders */}
-            {(activeTab === "all" || activeTab === "bakery") && filteredOrders.length > 0 && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <ShoppingBag className="w-5 h-5 text-bakery-700" />
-                  <h2 className="font-serif font-extrabold text-lg sm:text-xl text-chocolate-900">
-                    Storefront & Cart Orders ({filteredOrders.length})
-                  </h2>
+        {(user.isLoggedIn || myOrderIds.length > 0) && (
+          <>
+            {totalCount === 0 ? (
+              /* Empty State */
+              <div className="bg-white rounded-3xl p-8 sm:p-12 text-center border-2 border-amber-200 shadow-xl space-y-4 max-w-2xl mx-auto">
+                <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mx-auto text-amber-700">
+                  <ShoppingBag className="w-8 h-8" />
                 </div>
+                <div className="space-y-1">
+                  <h3 className="font-serif font-black text-xl text-chocolate-900">
+                    No Orders Placed Yet for This Account
+                  </h3>
+                  <p className="text-xs text-amber-800/80 max-w-md mx-auto">
+                    {loginEmail
+                      ? `No orders found under ${loginEmail}. Orders you place will immediately appear here for live tracking.`
+                      : "You haven't placed any orders yet. Explore our delicious sweets, bakery items, or design a custom photo cake!"}
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                  <Link
+                    href="/#catalog-section"
+                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-bakery-600 text-white font-black text-xs shadow-md"
+                  >
+                    Browse Menu & Order
+                  </Link>
+                  <Link
+                    href="/photo-cake"
+                    className="px-5 py-2.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-chocolate-900 font-black text-xs border border-amber-300"
+                  >
+                    Design Photo Cake 📸
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                
+                {/* Section A: Regular Bakery Orders */}
+                {(activeTab === "all" || activeTab === "bakery") && filteredOrders.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <ShoppingBag className="w-5 h-5 text-bakery-700" />
+                      <h2 className="font-serif font-extrabold text-lg sm:text-xl text-chocolate-900">
+                        Storefront & Cart Orders ({filteredOrders.length})
+                      </h2>
+                    </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {filteredOrders.map((order) => (
-                    <div
-                      key={order.id}
-                      className="bg-white rounded-3xl p-5 border-2 border-amber-200/90 shadow-md hover:shadow-lg transition space-y-4 flex flex-col justify-between"
-                    >
-                      <div className="space-y-3">
-                        <div className="flex items-start justify-between gap-2 border-b border-amber-100 pb-3">
-                          <div>
-                            <span className="text-[10px] text-amber-700 font-bold uppercase tracking-wider block">
-                              Order ID
-                            </span>
-                            <span className="font-mono font-black text-sm text-chocolate-950">
-                              #{order.id}
-                            </span>
-                            <span className="text-[10px] text-amber-800/70 block mt-0.5">
-                              {order.created_at ? formatDate(order.created_at) : "Recently Placed"}
-                            </span>
-                          </div>
-                          {getOrderStatusBadge(order.status)}
-                        </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {filteredOrders.map((order) => (
+                        <div
+                          key={order.id}
+                          className="bg-white rounded-3xl p-5 border-2 border-amber-200/90 shadow-md hover:shadow-lg transition space-y-4 flex flex-col justify-between"
+                        >
+                          <div className="space-y-3">
+                            <div className="flex items-start justify-between gap-2 border-b border-amber-100 pb-3">
+                              <div>
+                                <span className="text-[10px] text-amber-700 font-bold uppercase tracking-wider block">
+                                  Order ID
+                                </span>
+                                <span className="font-mono font-black text-sm text-chocolate-950">
+                                  #{order.id}
+                                </span>
+                                <span className="text-[10px] text-amber-800/70 block mt-0.5">
+                                  {order.created_at ? formatDate(order.created_at) : "Recently Placed"}
+                                </span>
+                              </div>
+                              {getOrderStatusBadge(order.status)}
+                            </div>
 
-                        {/* Items List */}
-                        <div className="space-y-1.5">
-                          <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider block">
-                            Ordered Items:
-                          </span>
-                          <div className="space-y-1 bg-amber-50/60 p-3 rounded-2xl border border-amber-100">
-                            {order.items.map((it, idx) => (
+                            {/* Items List */}
+                            <div className="space-y-1.5">
+                              <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider block">
+                                Ordered Items:
+                              </span>
+                              <div className="space-y-1 bg-amber-50/60 p-3 rounded-2xl border border-amber-100">
+                                {order.items.map((it, idx) => (
                               <div key={idx} className="flex justify-between items-center text-xs text-chocolate-900">
                                 <span className="font-semibold truncate max-w-[200px]">
                                   {it.product_title || "Bakery Item"} × {it.quantity}
@@ -784,6 +745,8 @@ export default function MyOrdersPage() {
 
           </div>
         )}
+      </>
+    )}
 
       </div>
     </div>

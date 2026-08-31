@@ -503,24 +503,54 @@ export default function Navbar() {
               ))}
             </div>
 
-            {/* Admin Link for Mobile */}
-            <div className="pt-2 border-t border-amber-100 flex gap-2">
-              {isAdmin ? (
-                <Link
-                  href="/admin/executive"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex-1 py-2.5 bg-amber-100 text-bakery-900 text-center font-bold text-xs rounded-xl border border-amber-300"
-                >
-                  👑 Open Admin Portal
-                </Link>
+            {/* User Session & Logout for Mobile */}
+            <div className="pt-3 border-t border-amber-100 space-y-2">
+              {user.isLoggedIn ? (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between p-3 bg-amber-50 rounded-xl border border-amber-200">
+                    <div>
+                      <p className="text-xs font-bold text-chocolate-900">{user.name}</p>
+                      <p className="text-[10px] text-amber-700">{user.email}</p>
+                    </div>
+                    {isAdmin && (
+                      <span className="text-[9px] bg-amber-200 text-bakery-950 font-black px-2 py-0.5 rounded-full">
+                        👑 Admin
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    {isAdmin && (
+                      <Link
+                        href="/admin/executive"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex-1 py-2.5 bg-amber-500 text-chocolate-950 text-center font-black text-xs rounded-xl shadow-sm"
+                      >
+                        👑 Executive Admin
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => {
+                        logout();
+                        setMobileMenuOpen(false);
+                      }}
+                      className="flex-1 py-2.5 bg-rose-100 hover:bg-rose-200 text-rose-800 text-center font-bold text-xs rounded-xl border border-rose-300 flex items-center justify-center gap-1.5 transition"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                </div>
               ) : (
-                <Link
-                  href="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex-1 py-2.5 bg-amber-50 text-chocolate-900 text-center font-bold text-xs rounded-xl border border-amber-200"
-                >
-                  Admin Sign In
-                </Link>
+                <div className="flex gap-2">
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-bakery-600 text-white text-center font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5"
+                  >
+                    <LogIn className="w-3.5 h-3.5" />
+                    <span>Sign In</span>
+                  </Link>
+                </div>
               )}
             </div>
           </div>

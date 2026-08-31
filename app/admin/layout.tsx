@@ -387,6 +387,20 @@ export default function AdminLayout({
               </nav>
             </div>
 
+            {/* Mobile Sidebar Footer Sign Out */}
+            <div className="pt-6 mt-6 border-t border-amber-900/60 space-y-2">
+              <button
+                onClick={() => {
+                  logout();
+                  setMobileSidebarOpen(false);
+                }}
+                className="w-full py-2.5 px-3 rounded-xl text-xs font-bold text-rose-300 bg-rose-950/40 hover:bg-rose-950/60 flex items-center justify-center gap-2 transition border border-rose-800/40"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Sign Out Admin</span>
+              </button>
+            </div>
+
           </aside>
         </div>
       )}
@@ -407,6 +421,15 @@ export default function AdminLayout({
               Hai Backery Admin
             </span>
           </div>
+
+          <button
+            onClick={() => logout()}
+            className="p-2 rounded-xl bg-rose-950/40 border border-rose-800/40 text-rose-300 hover:bg-rose-900/50 flex items-center gap-1 text-xs font-bold"
+            title="Sign Out Admin"
+          >
+            <LogOut className="w-4 h-4" />
+            <span className="text-[11px]">Sign Out</span>
+          </button>
         </header>
 
         {/* Dynamic Admin View */}

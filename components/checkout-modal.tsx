@@ -53,6 +53,8 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
     setIsSubmitting(true);
 
     try {
+      const effectiveEmail = user.isLoggedIn && user.email ? user.email.trim().toLowerCase() : customerEmail.trim().toLowerCase();
+
       const orderItems = items.map((item) => ({
         product_id: item.product.id,
         product_title: item.product.title,
@@ -62,12 +64,12 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
       }));
 
       const newOrder = await createOrder({
-        user_id: null,
+        user_id: user.isLoggedIn ? user.email : null,
         customer_name: customerName.trim(),
         customer_phone: customerPhone.trim(),
-        customer_email: customerEmail.trim().toLowerCase(),
+        customer_email: effectiveEmail,
         delivery_address: "Store Pickup - Hai Backery, Barrage Center",
-        notes: (customerEmail.trim() ? `[Email: ${customerEmail.trim().toLowerCase()}] • ` : "") + (pickupNotes.trim() ? `${pickupNotes.trim()} • ` : "") + "[Store Pickup • Pay at Counter]",
+        notes: (effectiveEmail ? `[Email: ${effectiveEmail}] • ` : "") + (pickupNotes.trim() ? `${pickupNotes.trim()} • ` : "") + "[Store Pickup • Pay at Counter]",
         total_amount: subtotal,
         profit_amount: totalProfit,
         status: "Pending",
@@ -88,8 +90,8 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
       // Save customer email & order ID to localStorage for My Orders filter
       if (typeof window !== "undefined") {
         try {
-          if (customerEmail.trim()) {
-            localStorage.setItem("hb_customer_email", customerEmail.trim().toLowerCase());
+          if (effectiveEmail) {
+            localStorage.setItem("hb_customer_email", effectiveEmail);
           }
           localStorage.setItem("hb_customer_phone", customerPhone.trim());
           const myIds = JSON.parse(localStorage.getItem("hb_my_order_ids") || "[]");
@@ -279,19 +281,32 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                 />
               </div>
 
-              {/* Input: Email */}
+              {/* Input: Email (Fixed to Login Email) */}
               <div>
-                <label className="block text-xs font-bold text-chocolate-900 mb-1 flex items-center gap-1.5">
-                  <Mail className="w-3.5 h-3.5 text-bakery-600" />
-                  Email Address (For Order Tracking) *
+                <label className="block text-xs font-bold text-chocolate-900 mb-1 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5 text-bakery-600" />
+                    Account Email (Fixed Login)
+                  </span>
+                  {user.isLoggedIn && (
+                    <span className="text-[10px] text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+                      ✓ Logged In Account
+                    </span>
+                  )}
                 </label>
                 <input
                   type="email"
                   required
+                  readOnly={user.isLoggedIn}
+                  disabled={user.isLoggedIn}
                   placeholder="e.g. customer@gmail.com"
-                  value={customerEmail}
+                  value={user.isLoggedIn ? user.email : customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-bakery-500/30 focus:border-bakery-500"
+                  className={`w-full px-3.5 py-2.5 text-xs rounded-xl border ${
+                    user.isLoggedIn
+                      ? "border-emerald-300 bg-emerald-50/70 text-emerald-950 font-bold cursor-not-allowed"
+                      : "border-amber-200 focus:outline-none focus:ring-2 focus:ring-bakery-500/30 focus:border-bakery-500"
+                  }`}
                 />
               </div>
 
