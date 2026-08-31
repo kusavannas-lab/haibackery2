@@ -52,6 +52,7 @@ export interface Order {
   user_id?: string | null;
   customer_name: string;
   customer_phone: string;
+  customer_email?: string;
   delivery_address: string;
   total_amount: number;
   profit_amount: number;
@@ -67,6 +68,7 @@ export interface PhotoCakeRequest {
   id: string;
   customer_name: string;
   customer_phone: string;
+  customer_email?: string;
   cake_flavor: string;
   cake_weight: string;
   cake_shape?: string;
@@ -111,6 +113,7 @@ export interface CustomerCakeSuggestion {
   id: string;
   customer_name: string;
   customer_phone: string;
+  customer_email?: string;
   description: string;
   image_url: string;
   occasion?: string;

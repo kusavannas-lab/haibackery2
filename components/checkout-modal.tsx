@@ -14,7 +14,8 @@ import {
   Send, 
   Truck, 
   ShieldCheck,
-  PackageCheck
+  PackageCheck,
+  Mail
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useCartStore } from "@/lib/store/cart-store";
@@ -34,6 +35,7 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
 
   const [customerName, setCustomerName] = useState(user.isLoggedIn ? user.name : "");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [customerEmail, setCustomerEmail] = useState(user.isLoggedIn ? user.email : "");
   const [pickupNotes, setPickupNotes] = useState("");
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,8 +65,9 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
         user_id: null,
         customer_name: customerName.trim(),
         customer_phone: customerPhone.trim(),
+        customer_email: customerEmail.trim().toLowerCase(),
         delivery_address: "Store Pickup - Hai Backery, Barrage Center",
-        notes: (pickupNotes.trim() ? `${pickupNotes.trim()} • ` : "") + "[Store Pickup • Pay at Counter]",
+        notes: (customerEmail.trim() ? `[Email: ${customerEmail.trim().toLowerCase()}] • ` : "") + (pickupNotes.trim() ? `${pickupNotes.trim()} • ` : "") + "[Store Pickup • Pay at Counter]",
         total_amount: subtotal,
         profit_amount: totalProfit,
         status: "Pending",
@@ -82,9 +85,12 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
         // ignore confetti errors
       }
 
-      // Save customer phone & order ID to localStorage for My Orders filter
+      // Save customer email & order ID to localStorage for My Orders filter
       if (typeof window !== "undefined") {
         try {
+          if (customerEmail.trim()) {
+            localStorage.setItem("hb_customer_email", customerEmail.trim().toLowerCase());
+          }
           localStorage.setItem("hb_customer_phone", customerPhone.trim());
           const myIds = JSON.parse(localStorage.getItem("hb_my_order_ids") || "[]");
           if (newOrder?.id && !myIds.includes(newOrder.id)) {
@@ -269,6 +275,22 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
                   placeholder="e.g. +91 93471 66241"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
+                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-bakery-500/30 focus:border-bakery-500"
+                />
+              </div>
+
+              {/* Input: Email */}
+              <div>
+                <label className="block text-xs font-bold text-chocolate-900 mb-1 flex items-center gap-1.5">
+                  <Mail className="w-3.5 h-3.5 text-bakery-600" />
+                  Email Address (For Order Tracking) *
+                </label>
+                <input
+                  type="email"
+                  required
+                  placeholder="e.g. customer@gmail.com"
+                  value={customerEmail}
+                  onChange={(e) => setCustomerEmail(e.target.value)}
                   className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-bakery-500/30 focus:border-bakery-500"
                 />
               </div>

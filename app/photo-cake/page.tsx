@@ -23,7 +23,8 @@ import {
   Eye,
   Sliders,
   ChevronDown,
-  PackageCheck
+  PackageCheck,
+  Mail
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import PhotoCakePreview from "@/components/photo-cake-preview";
@@ -143,6 +144,7 @@ export default function PhotoCakePage() {
   // Customer Contact State
   const [customerName, setCustomerName] = useState(user.isLoggedIn ? user.name : "");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [customerEmail, setCustomerEmail] = useState(user.isLoggedIn ? user.email : "");
   const [deliveryDate, setDeliveryDate] = useState(() => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -252,6 +254,7 @@ export default function PhotoCakePage() {
       const requestRecord = await submitPhotoCakeRequest({
         customer_name: customerName.trim(),
         customer_phone: customerPhone.trim(),
+        customer_email: customerEmail.trim().toLowerCase(),
         cake_flavor: selectedFlavor,
         cake_weight: selectedWeight,
         cake_shape: selectedShape,
@@ -260,7 +263,7 @@ export default function PhotoCakePage() {
         message: cakeMessage.trim(),
         delivery_date: deliveryDate,
         delivery_time: deliveryTime,
-        notes: specialNotes.trim(),
+        notes: (customerEmail.trim() ? `[Email: ${customerEmail.trim().toLowerCase()}] ` : "") + specialNotes.trim(),
         estimated_price: calculatedPrice,
         status: "Received",
       });
@@ -276,9 +279,12 @@ export default function PhotoCakePage() {
         // ignore
       }
 
-      // Save customer phone & order ID to localStorage for My Orders filter
+      // Save customer email & order ID to localStorage for My Orders filter
       if (typeof window !== "undefined") {
         try {
+          if (customerEmail.trim()) {
+            localStorage.setItem("hb_customer_email", customerEmail.trim().toLowerCase());
+          }
           localStorage.setItem("hb_customer_phone", customerPhone.trim());
           const myIds = JSON.parse(localStorage.getItem("hb_my_order_ids") || "[]");
           if (requestRecord?.id && !myIds.includes(requestRecord.id)) {
@@ -789,6 +795,21 @@ export default function PhotoCakePage() {
                       placeholder="e.g. +91 93471 66241"
                       value={customerPhone}
                       onChange={(e) => setCustomerPhone(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-bakery-500/30 font-medium text-chocolate-900 bg-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-chocolate-900 mb-1 flex items-center gap-1.5">
+                      <Mail className="w-3.5 h-3.5 text-bakery-600" />
+                      Email Address (For Order Tracking) *
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="e.g. yourname@gmail.com"
+                      value={customerEmail}
+                      onChange={(e) => setCustomerEmail(e.target.value)}
                       className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-amber-200 focus:outline-none focus:ring-2 focus:ring-bakery-500/30 font-medium text-chocolate-900 bg-white"
                     />
                   </div>

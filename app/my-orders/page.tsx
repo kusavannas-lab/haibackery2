@@ -7,7 +7,7 @@ import {
   Cake, 
   Sparkles, 
   Camera, 
-  Phone, 
+  Mail, 
   Calendar, 
   Clock, 
   Search, 
@@ -44,27 +44,31 @@ export default function MyOrdersPage() {
   const [activeTab, setActiveTab] = useState<OrderTab>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   
-  // Customer active phone filter (defaults to local storage or user session)
-  const [activePhone, setActivePhone] = useState<string>("");
-  const [inputPhone, setInputPhone] = useState<string>("");
-  const [isEditingPhone, setIsEditingPhone] = useState<boolean>(false);
+  // Customer active email filter (defaults to local storage or user session)
+  const [activeEmail, setActiveEmail] = useState<string>("");
+  const [inputEmail, setInputEmail] = useState<string>("");
+  const [isEditingEmail, setIsEditingEmail] = useState<boolean>(false);
   const [myOrderIds, setMyOrderIds] = useState<string[]>([]);
   const [viewAllAdminMode, setViewAllAdminMode] = useState<boolean>(false);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
-  // Load customer phone from localStorage on mount
+  // Load customer email from localStorage or user session on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
       try {
-        const savedPhone = localStorage.getItem("hb_customer_phone") || "";
+        const savedEmail = localStorage.getItem("hb_customer_email") || "";
         const savedIds = JSON.parse(localStorage.getItem("hb_my_order_ids") || "[]");
         setMyOrderIds(savedIds);
 
-        if (savedPhone) {
-          setActivePhone(savedPhone);
-          setInputPhone(savedPhone);
-        } else if (user.isLoggedIn && !isAdmin && user.email) {
-          setActivePhone(user.name || "");
+        if (user.isLoggedIn && !isAdmin && user.email) {
+          const userMail = user.email.trim().toLowerCase();
+          setActiveEmail(userMail);
+          setInputEmail(userMail);
+          localStorage.setItem("hb_customer_email", userMail);
+        } else if (savedEmail) {
+          const mail = savedEmail.trim().toLowerCase();
+          setActiveEmail(mail);
+          setInputEmail(mail);
         }
       } catch {
         // ignore
@@ -74,36 +78,44 @@ export default function MyOrdersPage() {
     }
   }, [user, isAdmin]);
 
-  // Save phone number handler
-  const handleSavePhone = (e?: React.FormEvent) => {
+  // Save email handler
+  const handleSaveEmail = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    const clean = inputPhone.trim();
+    const clean = inputEmail.trim().toLowerCase();
     if (!clean) return;
-    setActivePhone(clean);
-    setIsEditingPhone(false);
+    setActiveEmail(clean);
+    setIsEditingEmail(false);
     if (typeof window !== "undefined") {
-      localStorage.setItem("hb_customer_phone", clean);
+      localStorage.setItem("hb_customer_email", clean);
+    }
+  };
+
+  const handleClearEmail = () => {
+    setActiveEmail("");
+    setInputEmail("");
+    setIsEditingEmail(true);
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("hb_customer_email");
     }
   };
 
   // Check if an item belongs to this customer
-  const isCustomerMatch = (customerPhoneNum: string, orderId: string) => {
+  const isCustomerMatch = (itemEmail: string | undefined, itemNotes: string | undefined, orderId: string) => {
     if (isAdmin && viewAllAdminMode) return true;
     if (myOrderIds.includes(orderId)) return true;
-    if (!activePhone.trim()) return false;
+    if (!activeEmail.trim()) return false;
     
-    // Normalize phone numbers (strip spaces, +91, dashes)
-    const cleanActive = activePhone.replace(/\D/g, "").slice(-10);
-    const cleanOrder = (customerPhoneNum || "").replace(/\D/g, "").slice(-10);
+    const targetEmail = activeEmail.trim().toLowerCase();
+    if (itemEmail && itemEmail.trim().toLowerCase() === targetEmail) return true;
+    if (itemNotes && itemNotes.toLowerCase().includes(targetEmail)) return true;
     
-    if (cleanActive && cleanOrder && cleanActive === cleanOrder) return true;
-    return (customerPhoneNum || "").includes(activePhone.trim());
+    return false;
   };
 
   // Filter Regular Store Orders
   const filteredOrders = useMemo(() => {
     return orders.filter((o) => {
-      if (!isCustomerMatch(o.customer_phone, o.id)) return false;
+      if (!isCustomerMatch(o.customer_email, o.notes, o.id)) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         const idMatch = o.id.toLowerCase().includes(q);
@@ -113,13 +125,13 @@ export default function MyOrdersPage() {
       }
       return true;
     });
-  }, [orders, activePhone, myOrderIds, viewAllAdminMode, isAdmin, searchQuery]);
+  }, [orders, activeEmail, myOrderIds, viewAllAdminMode, isAdmin, searchQuery]);
 
   // Filter Photo Cakes
   const filteredPhotoCakes = useMemo(() => {
     return photoCakes.filter((p) => {
       if (p.id.startsWith("sug-")) return false;
-      if (!isCustomerMatch(p.customer_phone, p.id)) return false;
+      if (!isCustomerMatch(p.customer_email, p.notes || p.special_notes, p.id)) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         const idMatch = p.id.toLowerCase().includes(q);
@@ -130,12 +142,12 @@ export default function MyOrdersPage() {
       }
       return true;
     });
-  }, [photoCakes, activePhone, myOrderIds, viewAllAdminMode, isAdmin, searchQuery]);
+  }, [photoCakes, activeEmail, myOrderIds, viewAllAdminMode, isAdmin, searchQuery]);
 
   // Filter Custom Suggestions
   const filteredSuggestions = useMemo(() => {
     return cakeSuggestions.filter((s) => {
-      if (!isCustomerMatch(s.customer_phone, s.id)) return false;
+      if (!isCustomerMatch(s.customer_email, s.admin_notes || s.description, s.id)) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         const idMatch = s.id.toLowerCase().includes(q);
@@ -146,7 +158,7 @@ export default function MyOrdersPage() {
       }
       return true;
     });
-  }, [cakeSuggestions, activePhone, myOrderIds, viewAllAdminMode, isAdmin, searchQuery]);
+  }, [cakeSuggestions, activeEmail, myOrderIds, viewAllAdminMode, isAdmin, searchQuery]);
 
   const totalCount = filteredOrders.length + filteredPhotoCakes.length + filteredSuggestions.length;
 
@@ -204,7 +216,7 @@ export default function MyOrdersPage() {
 
   if (!isLoaded) return null;
 
-  const showPhonePrompt = !activePhone && (!isAdmin || !viewAllAdminMode) && myOrderIds.length === 0;
+  const showEmailPrompt = !activeEmail && (!isAdmin || !viewAllAdminMode) && myOrderIds.length === 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#fcf4e8] via-[#fff7ed] to-[#fdebd0] py-6 sm:py-10">
@@ -223,7 +235,7 @@ export default function MyOrdersPage() {
             </h1>
 
             <p className="text-xs sm:text-sm text-amber-200/90 leading-relaxed">
-              Here you can view and track <strong>only your personal orders</strong>, custom photo cakes, and special cake design ideas placed with Hai Backery.
+              View and track <strong>only your personal orders</strong>, custom photo cakes, and special cake design ideas placed with Hai Backery.
             </p>
           </div>
 
@@ -259,33 +271,33 @@ export default function MyOrdersPage() {
           </div>
         </div>
 
-        {/* 2. Customer Phone Bar / Verification Card */}
-        {showPhonePrompt || isEditingPhone ? (
+        {/* 2. Customer Email Bar / Verification Card */}
+        {showEmailPrompt || isEditingEmail ? (
           <div className="bg-white rounded-3xl p-6 sm:p-8 border-2 border-amber-300 shadow-xl max-w-xl mx-auto text-center space-y-4 animate-in zoom-in-95 duration-200">
             <div className="w-14 h-14 rounded-2xl bg-amber-100 flex items-center justify-center mx-auto text-bakery-700">
-              <Phone className="w-7 h-7" />
+              <Mail className="w-7 h-7" />
             </div>
 
             <div className="space-y-1">
               <h2 className="font-serif font-black text-xl text-chocolate-900">
-                Enter Your WhatsApp Phone Number
+                Enter Your Email Address
               </h2>
               <p className="text-xs text-amber-800/80 max-w-md mx-auto">
-                To keep your orders private and securely show only your personal bakery orders & custom cakes, enter your 10-digit mobile number:
+                To keep your orders private and securely show only your personal bakery orders & custom cakes, enter your email address:
               </p>
             </div>
 
-            <form onSubmit={handleSavePhone} className="space-y-3 pt-2">
+            <form onSubmit={handleSaveEmail} className="space-y-3 pt-2">
               <div className="flex rounded-2xl border-2 border-amber-300 overflow-hidden bg-amber-50/60 focus-within:ring-2 focus-within:ring-amber-500">
                 <span className="px-4 py-3 bg-amber-100 text-chocolate-900 font-black text-sm flex items-center border-r border-amber-300">
-                  🇮🇳 +91
+                  ✉️ Email
                 </span>
                 <input
-                  type="tel"
+                  type="email"
                   required
-                  placeholder="Enter 10-digit Mobile Number"
-                  value={inputPhone}
-                  onChange={(e) => setInputPhone(e.target.value)}
+                  placeholder="Enter your email (e.g. name@gmail.com)"
+                  value={inputEmail}
+                  onChange={(e) => setInputEmail(e.target.value)}
                   className="flex-1 px-4 py-3 bg-transparent text-chocolate-900 text-sm font-bold placeholder:text-amber-700/50 focus:outline-none"
                 />
               </div>
@@ -297,10 +309,10 @@ export default function MyOrdersPage() {
                 >
                   View My Orders 📦
                 </button>
-                {activePhone && (
+                {activeEmail && (
                   <button
                     type="button"
-                    onClick={() => setIsEditingPhone(false)}
+                    onClick={() => setIsEditingEmail(false)}
                     className="px-4 py-3.5 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs"
                   >
                     Cancel
@@ -322,7 +334,7 @@ export default function MyOrdersPage() {
                 </span>
                 <div className="flex items-center gap-2">
                   <span className="font-extrabold text-chocolate-900 text-sm sm:text-base">
-                    {activePhone ? `📱 +91 ${activePhone}` : "📍 This Device's Placed Orders"}
+                    {activeEmail ? `✉️ ${activeEmail}` : "📍 This Device's Placed Orders"}
                   </span>
                   <span className="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-emerald-300">
                     Active Customer
@@ -335,20 +347,20 @@ export default function MyOrdersPage() {
               <button
                 type="button"
                 onClick={() => {
-                  setInputPhone(activePhone);
-                  setIsEditingPhone(true);
+                  setInputEmail(activeEmail);
+                  setIsEditingEmail(true);
                 }}
                 className="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-amber-100 hover:bg-amber-200 text-chocolate-950 font-bold text-xs flex items-center justify-center gap-1.5 border border-amber-300 transition"
               >
                 <Edit3 className="w-3.5 h-3.5 text-bakery-700" />
-                <span>Switch Phone Number</span>
+                <span>Switch Email Address</span>
               </button>
             </div>
           </div>
         )}
 
         {/* 3. Search & Tabs Filter */}
-        {(!showPhonePrompt || isEditingPhone === false) && (
+        {(!showEmailPrompt || isEditingEmail === false) && (
           <div className="bg-white rounded-3xl p-4 sm:p-6 border-2 border-amber-200 shadow-md space-y-4">
             <div className="relative">
               <input
@@ -445,8 +457,8 @@ export default function MyOrdersPage() {
                 No Orders Found for This Customer
               </h3>
               <p className="text-xs text-amber-800/80 max-w-md mx-auto">
-                {activePhone
-                  ? `No orders found for +91 ${activePhone}. If you placed an order with a different number, tap "Switch Phone Number" above.`
+                {activeEmail
+                  ? `No orders found for ${activeEmail}. If you used a different email address, tap "Switch Email Address" above.`
                   : "You haven't placed any orders yet. Explore our delicious sweets, bakery items, or design a custom photo cake!"}
               </p>
             </div>
@@ -523,7 +535,9 @@ export default function MyOrdersPage() {
                         <div className="flex items-center justify-between text-xs pt-1">
                           <div className="text-chocolate-900 font-medium">
                             <span>👤 {order.customer_name}</span>
-                            <span className="text-[11px] text-amber-800 ml-1">({order.customer_phone})</span>
+                            {order.customer_email && (
+                              <span className="text-[11px] text-amber-800 ml-1">({order.customer_email})</span>
+                            )}
                           </div>
                           <div className="text-right">
                             <span className="text-[10px] text-amber-700 block font-bold">Total Bill:</span>
@@ -641,7 +655,9 @@ export default function MyOrdersPage() {
                         <div className="flex items-center justify-between text-xs pt-1">
                           <div className="text-chocolate-900 font-medium">
                             <span>👤 {cake.customer_name}</span>
-                            <span className="text-[11px] text-amber-800 ml-1">({cake.customer_phone})</span>
+                            {cake.customer_email && (
+                              <span className="text-[11px] text-amber-800 ml-1">({cake.customer_email})</span>
+                            )}
                           </div>
                           <div className="text-right">
                             <span className="text-[10px] text-amber-700 block font-bold">Est. Price:</span>
@@ -729,7 +745,9 @@ export default function MyOrdersPage() {
                         <div className="flex items-center justify-between text-xs pt-1">
                           <div className="text-chocolate-900 font-medium">
                             <span>👤 {sug.customer_name}</span>
-                            <span className="text-[11px] text-amber-800 ml-1">({sug.customer_phone})</span>
+                            {sug.customer_email && (
+                              <span className="text-[11px] text-amber-800 ml-1">({sug.customer_email})</span>
+                            )}
                           </div>
                           {sug.quoted_price ? (
                             <div className="text-right">

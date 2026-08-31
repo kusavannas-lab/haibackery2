@@ -26,6 +26,7 @@ import {
   Scale,
   Download,
   PackageCheck,
+  Mail,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import ImageUploadDropzone from "@/components/image-upload-dropzone";
@@ -78,6 +79,7 @@ export default function CustomCakeSuggestionPage() {
   const [neededTime, setNeededTime] = useState("Morning (9:00 AM - 12:00 PM)");
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
   const [deliveryPreference, setDeliveryPreference] = useState("Store Pickup (Barrage Center)");
   const [specialNotes, setSpecialNotes] = useState("");
 
@@ -107,6 +109,7 @@ export default function CustomCakeSuggestionPage() {
       const newSug = await submitCakeSuggestion({
         customer_name: customerName.trim(),
         customer_phone: customerPhone.trim(),
+        customer_email: customerEmail.trim().toLowerCase(),
         description: description.trim(),
         image_url: imageUrl.trim(),
         occasion,
@@ -115,12 +118,15 @@ export default function CustomCakeSuggestionPage() {
         is_eggless: isEggless,
         needed_date: neededDate,
         needed_time: neededTime,
-        admin_notes: `Delivery/Pickup: ${deliveryPreference} | Notes: ${specialNotes || "None"}`,
+        admin_notes: (customerEmail.trim() ? `[Email: ${customerEmail.trim().toLowerCase()}] ` : "") + `Delivery/Pickup: ${deliveryPreference} | Notes: ${specialNotes || "None"}`,
       });
 
-      // Save customer phone & order ID to localStorage for My Orders filter
+      // Save customer email & order ID to localStorage for My Orders filter
       if (typeof window !== "undefined") {
         try {
+          if (customerEmail.trim()) {
+            localStorage.setItem("hb_customer_email", customerEmail.trim().toLowerCase());
+          }
           localStorage.setItem("hb_customer_phone", customerPhone.trim());
           const myIds = JSON.parse(localStorage.getItem("hb_my_order_ids") || "[]");
           if (newSug?.id && !myIds.includes(newSug.id)) {
@@ -584,6 +590,20 @@ export default function CustomCakeSuggestionPage() {
                       placeholder="e.g. 9876543210"
                       value={customerPhone}
                       onChange={(e) => setCustomerPhone(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border-2 border-amber-200 focus:border-amber-500 focus:outline-none bg-white font-semibold text-chocolate-900"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-xs font-black text-chocolate-900 uppercase tracking-wider">
+                      Email Address (For Order Tracking) *
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="e.g. customer@gmail.com"
+                      value={customerEmail}
+                      onChange={(e) => setCustomerEmail(e.target.value)}
                       className="w-full px-3.5 py-2.5 text-xs rounded-xl border-2 border-amber-200 focus:border-amber-500 focus:outline-none bg-white font-semibold text-chocolate-900"
                     />
                   </div>
