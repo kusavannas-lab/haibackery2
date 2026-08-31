@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { 
   ShoppingBag, 
@@ -23,7 +23,11 @@ import {
   ChefHat,
   Filter,
   User,
-  Heart
+  ShieldCheck,
+  Eye,
+  RefreshCw,
+  LogOut,
+  Edit3
 } from "lucide-react";
 import { useBakeryStore } from "@/lib/store/bakery-store";
 import { useCartStore } from "@/lib/store/cart-store";
@@ -34,22 +38,72 @@ import { Order, PhotoCakeRequest, CustomerCakeSuggestion } from "@/lib/types";
 type OrderTab = "all" | "bakery" | "photo-cakes" | "custom-cakes";
 
 export default function MyOrdersPage() {
-  const { orders, photoCakes, cakeSuggestions, user, visibleProducts } = useBakeryStore();
+  const { orders, photoCakes, cakeSuggestions, user, isAdmin, visibleProducts } = useBakeryStore();
   const { addItem, openCart } = useCartStore();
 
   const [activeTab, setActiveTab] = useState<OrderTab>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [phoneFilter, setPhoneFilter] = useState<string>("");
+  
+  // Customer active phone filter (defaults to local storage or user session)
+  const [activePhone, setActivePhone] = useState<string>("");
+  const [inputPhone, setInputPhone] = useState<string>("");
+  const [isEditingPhone, setIsEditingPhone] = useState<boolean>(false);
+  const [myOrderIds, setMyOrderIds] = useState<string[]>([]);
+  const [viewAllAdminMode, setViewAllAdminMode] = useState<boolean>(false);
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
-  // Determine user phone from existing data or user session if available
-  const userPhone = useMemo(() => {
-    return phoneFilter.trim();
-  }, [phoneFilter]);
+  // Load customer phone from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const savedPhone = localStorage.getItem("hb_customer_phone") || "";
+        const savedIds = JSON.parse(localStorage.getItem("hb_my_order_ids") || "[]");
+        setMyOrderIds(savedIds);
 
-  // Filter Regular Orders
+        if (savedPhone) {
+          setActivePhone(savedPhone);
+          setInputPhone(savedPhone);
+        } else if (user.isLoggedIn && !isAdmin && user.email) {
+          setActivePhone(user.name || "");
+        }
+      } catch {
+        // ignore
+      } finally {
+        setIsLoaded(true);
+      }
+    }
+  }, [user, isAdmin]);
+
+  // Save phone number handler
+  const handleSavePhone = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const clean = inputPhone.trim();
+    if (!clean) return;
+    setActivePhone(clean);
+    setIsEditingPhone(false);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("hb_customer_phone", clean);
+    }
+  };
+
+  // Check if an item belongs to this customer
+  const isCustomerMatch = (customerPhoneNum: string, orderId: string) => {
+    if (isAdmin && viewAllAdminMode) return true;
+    if (myOrderIds.includes(orderId)) return true;
+    if (!activePhone.trim()) return false;
+    
+    // Normalize phone numbers (strip spaces, +91, dashes)
+    const cleanActive = activePhone.replace(/\D/g, "").slice(-10);
+    const cleanOrder = (customerPhoneNum || "").replace(/\D/g, "").slice(-10);
+    
+    if (cleanActive && cleanOrder && cleanActive === cleanOrder) return true;
+    return (customerPhoneNum || "").includes(activePhone.trim());
+  };
+
+  // Filter Regular Store Orders
   const filteredOrders = useMemo(() => {
     return orders.filter((o) => {
-      if (userPhone && !o.customer_phone.includes(userPhone)) return false;
+      if (!isCustomerMatch(o.customer_phone, o.id)) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         const idMatch = o.id.toLowerCase().includes(q);
@@ -59,14 +113,13 @@ export default function MyOrdersPage() {
       }
       return true;
     });
-  }, [orders, userPhone, searchQuery]);
+  }, [orders, activePhone, myOrderIds, viewAllAdminMode, isAdmin, searchQuery]);
 
   // Filter Photo Cakes
   const filteredPhotoCakes = useMemo(() => {
     return photoCakes.filter((p) => {
-      // Exclude suggestion requests starting with sug-
       if (p.id.startsWith("sug-")) return false;
-      if (userPhone && !p.customer_phone.includes(userPhone)) return false;
+      if (!isCustomerMatch(p.customer_phone, p.id)) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         const idMatch = p.id.toLowerCase().includes(q);
@@ -77,12 +130,12 @@ export default function MyOrdersPage() {
       }
       return true;
     });
-  }, [photoCakes, userPhone, searchQuery]);
+  }, [photoCakes, activePhone, myOrderIds, viewAllAdminMode, isAdmin, searchQuery]);
 
   // Filter Custom Suggestions
   const filteredSuggestions = useMemo(() => {
     return cakeSuggestions.filter((s) => {
-      if (userPhone && !s.customer_phone.includes(userPhone)) return false;
+      if (!isCustomerMatch(s.customer_phone, s.id)) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         const idMatch = s.id.toLowerCase().includes(q);
@@ -93,7 +146,7 @@ export default function MyOrdersPage() {
       }
       return true;
     });
-  }, [cakeSuggestions, userPhone, searchQuery]);
+  }, [cakeSuggestions, activePhone, myOrderIds, viewAllAdminMode, isAdmin, searchQuery]);
 
   const totalCount = filteredOrders.length + filteredPhotoCakes.length + filteredSuggestions.length;
 
@@ -149,6 +202,10 @@ export default function MyOrdersPage() {
     return `https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent(msg)}`;
   };
 
+  if (!isLoaded) return null;
+
+  const showPhonePrompt = !activePhone && (!isAdmin || !viewAllAdminMode) && myOrderIds.length === 0;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#fcf4e8] via-[#fff7ed] to-[#fdebd0] py-6 sm:py-10">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
@@ -158,19 +215,33 @@ export default function MyOrdersPage() {
           <div className="space-y-2 relative z-10 max-w-2xl">
             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-black border border-amber-500/40">
               <PackageCheck className="w-4 h-4 text-amber-400" />
-              <span>Customer Order Center</span>
+              <span>Customer Orders & Live Tracking</span>
             </span>
 
             <h1 className="text-2xl sm:text-4xl font-serif font-black text-amber-50 leading-tight">
-              My Orders & <span className="text-amber-400">Live Tracking</span> 📦
+              My Orders & <span className="text-amber-400">Order History</span> 📦
             </h1>
 
             <p className="text-xs sm:text-sm text-amber-200/90 leading-relaxed">
-              Track your fresh sweets, bakery pickup orders, personalized edible photo cakes, and custom cake design inquiries placed with <strong>Hai Backery</strong>.
+              Here you can view and track <strong>only your personal orders</strong>, custom photo cakes, and special cake design ideas placed with Hai Backery.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 relative z-10 shrink-0">
+            {isAdmin && (
+              <button
+                onClick={() => setViewAllAdminMode(!viewAllAdminMode)}
+                className={`px-3.5 py-2.5 rounded-xl font-bold text-xs border flex items-center gap-1.5 transition shadow-sm ${
+                  viewAllAdminMode
+                    ? "bg-amber-500 text-chocolate-950 border-amber-300"
+                    : "bg-white/10 text-amber-200 border-white/20 hover:bg-white/20"
+                }`}
+              >
+                <ShieldCheck className="w-4 h-4" />
+                <span>{viewAllAdminMode ? "Admin: Showing All Store Orders" : "Switch to View All Orders"}</span>
+              </button>
+            )}
+
             <Link
               href="/"
               className="px-4 py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 font-bold text-xs border border-amber-400/40 flex items-center gap-1.5 transition"
@@ -188,14 +259,101 @@ export default function MyOrdersPage() {
           </div>
         </div>
 
-        {/* 2. Search & Phone Filter Controls */}
-        <div className="bg-white rounded-3xl p-4 sm:p-6 border-2 border-amber-200 shadow-md space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
-            {/* Search input */}
-            <div className="sm:col-span-7 relative">
+        {/* 2. Customer Phone Bar / Verification Card */}
+        {showPhonePrompt || isEditingPhone ? (
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border-2 border-amber-300 shadow-xl max-w-xl mx-auto text-center space-y-4 animate-in zoom-in-95 duration-200">
+            <div className="w-14 h-14 rounded-2xl bg-amber-100 flex items-center justify-center mx-auto text-bakery-700">
+              <Phone className="w-7 h-7" />
+            </div>
+
+            <div className="space-y-1">
+              <h2 className="font-serif font-black text-xl text-chocolate-900">
+                Enter Your WhatsApp Phone Number
+              </h2>
+              <p className="text-xs text-amber-800/80 max-w-md mx-auto">
+                To keep your orders private and securely show only your personal bakery orders & custom cakes, enter your 10-digit mobile number:
+              </p>
+            </div>
+
+            <form onSubmit={handleSavePhone} className="space-y-3 pt-2">
+              <div className="flex rounded-2xl border-2 border-amber-300 overflow-hidden bg-amber-50/60 focus-within:ring-2 focus-within:ring-amber-500">
+                <span className="px-4 py-3 bg-amber-100 text-chocolate-900 font-black text-sm flex items-center border-r border-amber-300">
+                  🇮🇳 +91
+                </span>
+                <input
+                  type="tel"
+                  required
+                  placeholder="Enter 10-digit Mobile Number"
+                  value={inputPhone}
+                  onChange={(e) => setInputPhone(e.target.value)}
+                  className="flex-1 px-4 py-3 bg-transparent text-chocolate-900 text-sm font-bold placeholder:text-amber-700/50 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-bakery-600 hover:from-amber-600 hover:to-bakery-700 text-white font-black text-xs sm:text-sm shadow-lg shadow-amber-500/25 transition"
+                >
+                  View My Orders 📦
+                </button>
+                {activePhone && (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingPhone(false)}
+                    className="px-4 py-3.5 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs"
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
+            </form>
+          </div>
+        ) : (
+          /* Active Customer Identifier Bar */
+          <div className="bg-white rounded-3xl p-4 sm:p-5 border-2 border-amber-200 shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 border border-amber-300 flex items-center justify-center text-bakery-700 shrink-0">
+                <User className="w-5 h-5" />
+              </div>
+              <div className="text-left">
+                <span className="text-[10px] uppercase font-black tracking-wider text-amber-700 block">
+                  Viewing Personal Orders For:
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="font-extrabold text-chocolate-900 text-sm sm:text-base">
+                    {activePhone ? `📱 +91 ${activePhone}` : "📍 This Device's Placed Orders"}
+                  </span>
+                  <span className="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-emerald-300">
+                    Active Customer
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={() => {
+                  setInputPhone(activePhone);
+                  setIsEditingPhone(true);
+                }}
+                className="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-amber-100 hover:bg-amber-200 text-chocolate-950 font-bold text-xs flex items-center justify-center gap-1.5 border border-amber-300 transition"
+              >
+                <Edit3 className="w-3.5 h-3.5 text-bakery-700" />
+                <span>Switch Phone Number</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* 3. Search & Tabs Filter */}
+        {(!showPhonePrompt || isEditingPhone === false) && (
+          <div className="bg-white rounded-3xl p-4 sm:p-6 border-2 border-amber-200 shadow-md space-y-4">
+            <div className="relative">
               <input
                 type="text"
-                placeholder="Search by Order ID, cake flavor, customer name..."
+                placeholder="Search within your orders by Order ID, item name, flavor..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-amber-50/70 border border-amber-200 text-sm text-chocolate-900 placeholder:text-amber-800/50 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500"
@@ -211,91 +369,71 @@ export default function MyOrdersPage() {
               )}
             </div>
 
-            {/* Phone Lookup input */}
-            <div className="sm:col-span-5 relative">
-              <input
-                type="text"
-                placeholder="Filter by Phone (e.g. 9347166241)"
-                value={phoneFilter}
-                onChange={(e) => setPhoneFilter(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-amber-50/70 border border-amber-200 text-sm text-chocolate-900 placeholder:text-amber-800/50 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500"
-              />
-              <Phone className="w-4 h-4 text-amber-700 absolute left-3.5 top-3.5" />
-              {phoneFilter && (
-                <button
-                  onClick={() => setPhoneFilter("")}
-                  className="absolute right-3.5 top-3 text-amber-600 hover:text-chocolate-900 text-xs font-bold"
-                >
-                  ×
-                </button>
-              )}
+            {/* Tab Navigation Buttons */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none pt-1">
+              <button
+                onClick={() => setActiveTab("all")}
+                className={`px-4 py-2 rounded-2xl font-bold text-xs transition shrink-0 flex items-center gap-1.5 ${
+                  activeTab === "all"
+                    ? "bg-gradient-to-r from-amber-500 to-bakery-600 text-white shadow-md shadow-amber-500/20"
+                    : "bg-amber-50 hover:bg-amber-100 text-chocolate-900 border border-amber-200"
+                }`}
+              >
+                <span>All My Orders</span>
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeTab === "all" ? "bg-white/20 text-white" : "bg-amber-200 text-bakery-900"}`}>
+                  {totalCount}
+                </span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab("bakery")}
+                className={`px-4 py-2 rounded-2xl font-bold text-xs transition shrink-0 flex items-center gap-1.5 ${
+                  activeTab === "bakery"
+                    ? "bg-gradient-to-r from-amber-500 to-bakery-600 text-white shadow-md shadow-amber-500/20"
+                    : "bg-amber-50 hover:bg-amber-100 text-chocolate-900 border border-amber-200"
+                }`}
+              >
+                <ShoppingBag className="w-3.5 h-3.5" />
+                <span>Store Orders</span>
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeTab === "bakery" ? "bg-white/20 text-white" : "bg-amber-200 text-bakery-900"}`}>
+                  {filteredOrders.length}
+                </span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab("photo-cakes")}
+                className={`px-4 py-2 rounded-2xl font-bold text-xs transition shrink-0 flex items-center gap-1.5 ${
+                  activeTab === "photo-cakes"
+                    ? "bg-gradient-to-r from-amber-500 to-bakery-600 text-white shadow-md shadow-amber-500/20"
+                    : "bg-amber-50 hover:bg-amber-100 text-chocolate-900 border border-amber-200"
+                }`}
+              >
+                <Camera className="w-3.5 h-3.5" />
+                <span>Photo Cake Requests</span>
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeTab === "photo-cakes" ? "bg-white/20 text-white" : "bg-amber-200 text-bakery-900"}`}>
+                  {filteredPhotoCakes.length}
+                </span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab("custom-cakes")}
+                className={`px-4 py-2 rounded-2xl font-bold text-xs transition shrink-0 flex items-center gap-1.5 ${
+                  activeTab === "custom-cakes"
+                    ? "bg-gradient-to-r from-amber-500 to-bakery-600 text-white shadow-md shadow-amber-500/20"
+                    : "bg-amber-50 hover:bg-amber-100 text-chocolate-900 border border-amber-200"
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Custom Cake Inquiries</span>
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeTab === "custom-cakes" ? "bg-white/20 text-white" : "bg-amber-200 text-bakery-900"}`}>
+                  {filteredSuggestions.length}
+                </span>
+              </button>
             </div>
           </div>
+        )}
 
-          {/* Tab Navigation Buttons */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none pt-1">
-            <button
-              onClick={() => setActiveTab("all")}
-              className={`px-4 py-2 rounded-2xl font-bold text-xs transition shrink-0 flex items-center gap-1.5 ${
-                activeTab === "all"
-                  ? "bg-gradient-to-r from-amber-500 to-bakery-600 text-white shadow-md shadow-amber-500/20"
-                  : "bg-amber-50 hover:bg-amber-100 text-chocolate-900 border border-amber-200"
-              }`}
-            >
-              <span>All Orders</span>
-              <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeTab === "all" ? "bg-white/20 text-white" : "bg-amber-200 text-bakery-900"}`}>
-                {totalCount}
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab("bakery")}
-              className={`px-4 py-2 rounded-2xl font-bold text-xs transition shrink-0 flex items-center gap-1.5 ${
-                activeTab === "bakery"
-                  ? "bg-gradient-to-r from-amber-500 to-bakery-600 text-white shadow-md shadow-amber-500/20"
-                  : "bg-amber-50 hover:bg-amber-100 text-chocolate-900 border border-amber-200"
-              }`}
-            >
-              <ShoppingBag className="w-3.5 h-3.5" />
-              <span>Store Bakery Orders</span>
-              <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeTab === "bakery" ? "bg-white/20 text-white" : "bg-amber-200 text-bakery-900"}`}>
-                {filteredOrders.length}
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab("photo-cakes")}
-              className={`px-4 py-2 rounded-2xl font-bold text-xs transition shrink-0 flex items-center gap-1.5 ${
-                activeTab === "photo-cakes"
-                  ? "bg-gradient-to-r from-amber-500 to-bakery-600 text-white shadow-md shadow-amber-500/20"
-                  : "bg-amber-50 hover:bg-amber-100 text-chocolate-900 border border-amber-200"
-              }`}
-            >
-              <Camera className="w-3.5 h-3.5" />
-              <span>Photo Cake Orders</span>
-              <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeTab === "photo-cakes" ? "bg-white/20 text-white" : "bg-amber-200 text-bakery-900"}`}>
-                {filteredPhotoCakes.length}
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab("custom-cakes")}
-              className={`px-4 py-2 rounded-2xl font-bold text-xs transition shrink-0 flex items-center gap-1.5 ${
-                activeTab === "custom-cakes"
-                  ? "bg-gradient-to-r from-amber-500 to-bakery-600 text-white shadow-md shadow-amber-500/20"
-                  : "bg-amber-50 hover:bg-amber-100 text-chocolate-900 border border-amber-200"
-              }`}
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Custom Cake Suggestions</span>
-              <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeTab === "custom-cakes" ? "bg-white/20 text-white" : "bg-amber-200 text-bakery-900"}`}>
-                {filteredSuggestions.length}
-              </span>
-            </button>
-          </div>
-        </div>
-
-        {/* 3. Orders Content List */}
+        {/* 4. Orders Content List */}
         {totalCount === 0 ? (
           /* Empty State */
           <div className="bg-white rounded-3xl p-8 sm:p-12 text-center border-2 border-amber-200 shadow-xl space-y-4 max-w-2xl mx-auto">
@@ -304,11 +442,11 @@ export default function MyOrdersPage() {
             </div>
             <div className="space-y-1">
               <h3 className="font-serif font-black text-xl text-chocolate-900">
-                No Orders Found
+                No Orders Found for This Customer
               </h3>
               <p className="text-xs text-amber-800/80 max-w-md mx-auto">
-                {phoneFilter || searchQuery
-                  ? "No matching orders found with your current search query or phone filter."
+                {activePhone
+                  ? `No orders found for +91 ${activePhone}. If you placed an order with a different number, tap "Switch Phone Number" above.`
                   : "You haven't placed any orders yet. Explore our delicious sweets, bakery items, or design a custom photo cake!"}
               </p>
             </div>
@@ -317,7 +455,7 @@ export default function MyOrdersPage() {
                 href="/#catalog-section"
                 className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-bakery-600 text-white font-black text-xs shadow-md"
               >
-                Browse Menu
+                Browse Menu & Order
               </Link>
               <Link
                 href="/photo-cake"

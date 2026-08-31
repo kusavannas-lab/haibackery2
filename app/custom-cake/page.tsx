@@ -118,6 +118,18 @@ export default function CustomCakeSuggestionPage() {
         admin_notes: `Delivery/Pickup: ${deliveryPreference} | Notes: ${specialNotes || "None"}`,
       });
 
+      // Save customer phone & order ID to localStorage for My Orders filter
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("hb_customer_phone", customerPhone.trim());
+          const myIds = JSON.parse(localStorage.getItem("hb_my_order_ids") || "[]");
+          if (newSug?.id && !myIds.includes(newSug.id)) {
+            myIds.push(newSug.id);
+            localStorage.setItem("hb_my_order_ids", JSON.stringify(myIds));
+          }
+        } catch {}
+      }
+
       setSubmittedSuggestion(newSug);
 
       // Confetti burst

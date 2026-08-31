@@ -82,6 +82,18 @@ export default function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
         // ignore confetti errors
       }
 
+      // Save customer phone & order ID to localStorage for My Orders filter
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("hb_customer_phone", customerPhone.trim());
+          const myIds = JSON.parse(localStorage.getItem("hb_my_order_ids") || "[]");
+          if (newOrder?.id && !myIds.includes(newOrder.id)) {
+            myIds.push(newOrder.id);
+            localStorage.setItem("hb_my_order_ids", JSON.stringify(myIds));
+          }
+        } catch {}
+      }
+
       setOrderSuccess(newOrder);
       clearCart();
 
