@@ -213,7 +213,7 @@ export default function AdminLayout({
       <div className="fixed bottom-10 left-80 w-[400px] h-[400px] bg-orange-400/10 rounded-full blur-3xl pointer-events-none -z-0" />
 
       {/* 1. DESKTOP FIXED SIDEBAR */}
-      <aside className="hidden lg:flex w-72 bg-[#1c0c05] text-white border-r-2 border-amber-900/50 flex-col justify-between shrink-0 sticky top-0 h-screen shadow-2xl z-30 overflow-y-auto">
+      <aside className="hidden lg:flex w-72 bg-[#1c0c05] text-white border-r-2 border-amber-900/50 flex-col justify-between shrink-0 fixed top-0 left-0 bottom-0 h-screen shadow-2xl z-30 overflow-y-auto">
         
         {/* Sidebar Header & Brand */}
         <div className="p-6 space-y-6">
@@ -406,7 +406,7 @@ export default function AdminLayout({
       )}
 
       {/* 3. MAIN CONTENT AREA */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative z-10">
+      <div className="flex-1 flex flex-col min-w-0 relative z-10 lg:pl-72 w-full min-h-screen">
         
         {/* Top Mobile Bar */}
         <header className="lg:hidden bg-[#1c0c05] text-white p-4 flex items-center justify-between sticky top-0 z-20 shadow-md">

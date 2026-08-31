@@ -750,7 +750,7 @@ export function useBakeryStore() {
       } catch {
         // silent background sync catch
       }
-    }, 3000);
+    }, 10000);
 
     return () => {
       clearInterval(syncInterval);
@@ -764,9 +764,13 @@ export function useBakeryStore() {
     };
   }, []);
 
+  let updateTimer: any = null;
   const notifyUpdate = () => {
     if (typeof window !== "undefined") {
-      window.dispatchEvent(new Event("hb_store_updated"));
+      if (updateTimer) clearTimeout(updateTimer);
+      updateTimer = setTimeout(() => {
+        window.dispatchEvent(new Event("hb_store_updated"));
+      }, 40);
     }
   };
 
@@ -911,43 +915,33 @@ export function useBakeryStore() {
   };
 
   const updateProduct = async (id: string, updates: Partial<Product>) => {
-    if (isSupabaseConfigured() && supabase) {
-      try {
-        const { error } = await supabase.from("products").update(updates).eq("id", id);
-        if (error) {
-          console.error("Supabase update product error:", error);
-        }
-      } catch (err) {
-        console.error("Supabase update product exception:", err);
-      }
-    }
-
     const updated = products.map((p) => (p.id === id ? { ...p, ...updates } : p));
     setProducts(updated);
     if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(updated));
     }
     notifyUpdate();
+
+    if (isSupabaseConfigured() && supabase) {
+      supabase.from("products").update(updates).eq("id", id).then(({ error }) => {
+        if (error) console.error("Supabase update product error:", error);
+      }).catch((err) => console.error("Supabase update product exception:", err));
+    }
   };
 
   const deleteProduct = async (id: string) => {
-    if (isSupabaseConfigured() && supabase) {
-      try {
-        const { error } = await supabase.from("products").delete().eq("id", id);
-        if (error) {
-          console.error("Supabase delete product error:", error);
-        }
-      } catch (err) {
-        console.error("Supabase delete product exception:", err);
-      }
-    }
-
     const updated = products.filter((p) => p.id !== id);
     setProducts(updated);
     if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(updated));
     }
     notifyUpdate();
+
+    if (isSupabaseConfigured() && supabase) {
+      supabase.from("products").delete().eq("id", id).then(({ error }) => {
+        if (error) console.error("Supabase delete product error:", error);
+      }).catch((err) => console.error("Supabase delete product exception:", err));
+    }
   };
 
   const toggleProductVisibility = async (id: string) => {
@@ -1112,18 +1106,16 @@ export function useBakeryStore() {
   };
 
   const updateOrderStatus = async (orderId: string, status: OrderStatus) => {
-    if (isSupabaseConfigured() && supabase) {
-      try {
-        await supabase.from("orders").update({ status }).eq("id", orderId);
-      } catch (err) {
-        console.error("Supabase update order status error:", err);
-      }
-    }
-
     const updated = orders.map((o) => (o.id === orderId ? { ...o, status } : o));
     setOrders(updated);
     localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(updated));
     notifyUpdate();
+
+    if (isSupabaseConfigured() && supabase) {
+      supabase.from("orders").update({ status }).eq("id", orderId).then(({ error }) => {
+        if (error) console.error("Supabase update order status error:", error);
+      }).catch((err) => console.error("Supabase update order status error:", err));
+    }
   };
 
   // Photo Cake Operations
@@ -1163,18 +1155,16 @@ export function useBakeryStore() {
   };
 
   const updatePhotoCakeStatus = async (requestId: string, status: PhotoCakeStatus) => {
-    if (isSupabaseConfigured() && supabase) {
-      try {
-        await supabase.from("photo_cake_requests").update({ status }).eq("id", requestId);
-      } catch (err) {
-        console.error("Supabase update photo cake status error:", err);
-      }
-    }
-
     const updated = photoCakes.map((pc) => (pc.id === requestId ? { ...pc, status } : pc));
     setPhotoCakes(updated);
     localStorage.setItem(STORAGE_KEYS.PHOTO_CAKES, JSON.stringify(updated));
     notifyUpdate();
+
+    if (isSupabaseConfigured() && supabase) {
+      supabase.from("photo_cake_requests").update({ status }).eq("id", requestId).then(({ error }) => {
+        if (error) console.error("Supabase update photo cake status error:", error);
+      }).catch((err) => console.error("Supabase update photo cake status error:", err));
+    }
   };
 
   // Customer Cake Suggestions & Custom Cake Design Requests
