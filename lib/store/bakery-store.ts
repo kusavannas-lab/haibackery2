@@ -219,8 +219,24 @@ export function useBakeryStore() {
     }
     return INITIAL_PHOTO_CAKE_CONFIG;
   });
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [photoCakes, setPhotoCakes] = useState<PhotoCakeRequest[]>([]);
+  const [orders, setOrders] = useState<Order[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const local = localStorage.getItem(STORAGE_KEYS.ORDERS);
+        if (local) return JSON.parse(local);
+      } catch {}
+    }
+    return [];
+  });
+  const [photoCakes, setPhotoCakes] = useState<PhotoCakeRequest[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const local = localStorage.getItem(STORAGE_KEYS.PHOTO_CAKES);
+        if (local) return JSON.parse(local);
+      } catch {}
+    }
+    return [];
+  });
   const [cakeSuggestions, setCakeSuggestions] = useState<CustomerCakeSuggestion[]>(() => {
     if (typeof window !== "undefined") {
       try {
@@ -239,13 +255,21 @@ export function useBakeryStore() {
     }
     return INITIAL_LOGIN_THEME;
   });
-  const [user, setUser] = useState<UserSession>({
-    email: "",
-    name: "",
-    role: "customer",
-    isLoggedIn: false,
+  const [user, setUser] = useState<UserSession>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const local = localStorage.getItem(STORAGE_KEYS.DEMO_USER);
+        if (local) return JSON.parse(local);
+      } catch {}
+    }
+    return {
+      email: "",
+      name: "",
+      role: "customer",
+      isLoggedIn: false,
+    };
   });
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Initialize data
   useEffect(() => {

@@ -203,7 +203,8 @@ export default function Navbar() {
               {/* Customer Orders Hub Link */}
               <Link
                 href="/my-orders"
-                className="hidden xl:flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-amber-100 hover:bg-amber-200 text-chocolate-950 text-xs font-black border border-amber-300 transition"
+                prefetch={true}
+                className="hidden xl:flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-amber-100 hover:bg-amber-200 active:scale-95 text-chocolate-950 text-xs font-black border border-amber-300 transition duration-75 cursor-pointer shadow-sm"
               >
                 <PackageCheck className="w-3.5 h-3.5 text-bakery-700" />
                 <span>📦 My Orders</span>
@@ -212,7 +213,8 @@ export default function Navbar() {
               {/* Custom Cake Idea Suggestion Link */}
               <Link
                 href="/custom-cake"
-                className="hidden md:flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-orange-100 hover:bg-orange-200 text-chocolate-950 text-xs font-black border border-orange-300 transition"
+                prefetch={true}
+                className="hidden md:flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-orange-100 hover:bg-orange-200 active:scale-95 text-chocolate-950 text-xs font-black border border-orange-300 transition duration-75 cursor-pointer shadow-sm"
               >
                 <span>🎨 Suggest Cake Idea</span>
               </Link>
@@ -220,7 +222,8 @@ export default function Navbar() {
               {/* Bulk & Event Orders Link */}
               <Link
                 href="/bulk-orders"
-                className="hidden md:flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-amber-100 hover:bg-amber-200 text-chocolate-900 text-xs font-black border border-amber-300 transition"
+                prefetch={true}
+                className="hidden md:flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-amber-100 hover:bg-amber-200 active:scale-95 text-chocolate-900 text-xs font-black border border-amber-300 transition duration-75 cursor-pointer shadow-sm"
               >
                 <span>🎉 Bulk / Events</span>
               </Link>
@@ -228,7 +231,8 @@ export default function Navbar() {
               {/* Photo Cake CTA Link */}
               <Link
                 href="/photo-cake"
-                className={`hidden lg:flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold shadow-md transition transform hover:-translate-y-0.5 ${
+                prefetch={true}
+                className={`hidden lg:flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold shadow-md transition duration-75 active:scale-95 cursor-pointer ${
                   isPhotoCakeEnabled
                     ? "bg-gradient-to-r from-amber-500 to-bakery-600 text-white shadow-amber-500/20 hover:from-amber-600 hover:to-bakery-700"
                     : "bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200"
@@ -242,7 +246,8 @@ export default function Navbar() {
               {isAdmin && (
                 <Link
                   href="/admin/executive"
-                  className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-amber-100 to-amber-200 text-bakery-950 hover:from-amber-200 hover:to-amber-300 transition text-[11px] sm:text-xs font-bold border border-amber-300 shadow-sm"
+                  prefetch={true}
+                  className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-amber-100 to-amber-200 text-bakery-950 hover:from-amber-200 hover:to-amber-300 transition duration-75 active:scale-95 text-[11px] sm:text-xs font-bold border border-amber-300 shadow-sm cursor-pointer"
                   title="Executive Admin Dashboard"
                 >
                   <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-bakery-700 animate-spin-slow" />
@@ -253,16 +258,20 @@ export default function Navbar() {
               {/* User / Login Dropdown */}
               <div ref={dropdownRef} className="relative">
                 <button
-                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="flex items-center gap-1.5 px-2 py-1.5 sm:px-3 sm:py-2 rounded-xl border border-amber-200 bg-amber-50/50 hover:bg-amber-100/70 text-chocolate-900 transition text-xs font-medium"
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setUserDropdownOpen((prev) => !prev);
+                  }}
+                  className="flex items-center gap-1.5 px-2 py-1.5 sm:px-3 sm:py-2 rounded-xl border border-amber-200 bg-amber-50/50 hover:bg-amber-100 text-chocolate-900 transition duration-75 active:scale-95 text-xs font-medium cursor-pointer shadow-sm"
                 >
                   <div className="w-6 h-6 rounded-full bg-amber-200 flex items-center justify-center text-bakery-800 font-bold text-xs shrink-0">
                     {user.isLoggedIn ? user.name.charAt(0).toUpperCase() : <User className="w-3.5 h-3.5" />}
                   </div>
-                  <span className="hidden xl:inline max-w-[100px] truncate">
+                  <span className="hidden xl:inline max-w-[100px] truncate font-bold">
                     {user.isLoggedIn ? user.name : "Sign In"}
                   </span>
-                  <ChevronDown className="w-3 h-3 text-amber-700" />
+                  <ChevronDown className={`w-3 h-3 text-amber-700 transition-transform duration-150 ${userDropdownOpen ? "rotate-180" : ""}`} />
                 </button>
 
                 {userDropdownOpen && (
@@ -458,8 +467,9 @@ export default function Navbar() {
             <div className="grid grid-cols-2 gap-2 pt-2">
               <Link
                 href="/my-orders"
+                prefetch={true}
                 onClick={() => setMobileMenuOpen(false)}
-                className="col-span-2 flex items-center justify-center gap-2 p-3 bg-gradient-to-r from-amber-600 to-bakery-700 text-white font-extrabold text-sm rounded-xl shadow-sm"
+                className="col-span-2 flex items-center justify-center gap-2 p-3 bg-gradient-to-r from-amber-600 to-bakery-700 active:scale-98 text-white font-extrabold text-sm rounded-xl shadow-sm transition duration-75"
               >
                 <PackageCheck className="w-4 h-4 text-amber-200" />
                 <span>📦 My Orders & Live Tracking</span>
@@ -467,35 +477,39 @@ export default function Navbar() {
 
               <Link
                 href="/custom-cake"
+                prefetch={true}
                 onClick={() => setMobileMenuOpen(false)}
-                className="col-span-2 flex items-center justify-center gap-2 p-3 bg-gradient-to-r from-orange-500 to-amber-600 text-white font-extrabold text-sm rounded-xl shadow-sm"
+                className="col-span-2 flex items-center justify-center gap-2 p-3 bg-gradient-to-r from-orange-500 to-amber-600 active:scale-98 text-white font-extrabold text-sm rounded-xl shadow-sm transition duration-75"
               >
                 <span>🎨 Suggest / Upload Custom Cake Design</span>
               </Link>
 
               <Link
                 href="/bulk-orders"
+                prefetch={true}
                 onClick={() => setMobileMenuOpen(false)}
-                className="col-span-2 flex items-center justify-center gap-2 p-3 bg-amber-100 hover:bg-amber-200 text-chocolate-900 font-extrabold text-sm rounded-xl border border-amber-300 shadow-sm"
+                className="col-span-2 flex items-center justify-center gap-2 p-3 bg-amber-100 hover:bg-amber-200 active:scale-98 text-chocolate-900 font-extrabold text-sm rounded-xl border border-amber-300 shadow-sm transition duration-75"
               >
                 <span>🎉 Bulk & Event Orders (Party & Marriage)</span>
               </Link>
 
               <Link
                 href="/photo-cake"
+                prefetch={true}
                 onClick={() => setMobileMenuOpen(false)}
-                className="col-span-2 flex items-center justify-center gap-2 p-3 bg-gradient-to-r from-amber-500 to-bakery-600 text-white font-bold text-sm rounded-xl shadow-sm"
+                className="col-span-2 flex items-center justify-center gap-2 p-3 bg-gradient-to-r from-amber-500 to-bakery-600 active:scale-98 text-white font-bold text-sm rounded-xl shadow-sm transition duration-75"
               >
                 <Sparkles className="w-4 h-4 text-yellow-200" />
-                Design Custom Photo Cake
+                <span>Design Custom Photo Cake</span>
               </Link>
 
               {visibleCategories.map((cat) => (
                 <Link
                   key={cat.id}
                   href={`/#${cat.id}`}
+                  prefetch={true}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-2 p-2.5 bg-amber-50/60 rounded-xl text-xs font-semibold text-chocolate-900 hover:bg-amber-100 transition"
+                  className="flex items-center gap-2 p-2.5 bg-amber-50/60 rounded-xl text-xs font-semibold text-chocolate-900 hover:bg-amber-100 active:scale-98 transition duration-75"
                 >
                   <span>🍰</span>
                   <span className="truncate">{cat.name}</span>
